@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Glass Music Player</title>
+    <link rel="stylesheet" href="style/style.css" />
+</head>
+<header id="drag-bar">
+    <div class="head">
+        <button id="open-player-btn", style="width: 20%; height: 90%; margin-right: 2vw;">Player</button>
+        <button id="open-downloader-btn", style="width: 20%; height: 90%; margin-left: 2vw;">Downloader</button>
+        <input type="text" id="url-input" placeholder="Song name" style="margin-left: 2vw;"/>
+        <button id="Settings", style="width: 20%; height: 90%; margin-left: 2vw;">...</button>
+    </div>
+</header>
+<body>
+    <div id="downloader-screen" class="screen" style="flex-direction: column;">
+        <input type="text" id="url-input" placeholder="Input URL" />
+        <input type="text" id="folder-input" placeholder="Folder (for example: downloads)" />
+        <div id="folders-list" class="scroll-list"></div>
+        <button id="start-download-btn">Download</button>
+        <pre id="debug-log" class="debug-log"></pre>
+    </div>
+
+    <div id="player-screen" class="screen" style="flex-direction: row;">
+        <div style="display: flex; flex-direction: row;">
+            <div id="folder-select" class="scroll-list" style="width: 20vw; margin: 1vw;"></div>
+            <div id="track-list" class="scroll-list" style="width: 20vw; margin: 1vw;"></div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; margin: auto;
+        justify-content: center; align-items: center;">
+            <div id="now-playing">
+                <p id="track-title" style="font-size: 4vh;">—</p>
+                <p id="track-artist" style="font-size: 3vh;">—</p>
+                <img id="track-cover" src="" alt="cover" style="width: 100vh; border-radius: 1rem;" />
+            </div>
+
+            <input type="range" id="progress-bar" min="0" max="100" value="0" />
+            <div class="time-display">
+                <span id="current-time">0:00</span>
+                <span id="total-time">0:00</span>
+            </div>
+
+            <div class="controls">
+                <button id="play-btn">▶</button>
+                <button id="pause-btn">⏸</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script/qwebchannel.js"></script>
+    <script src="script/script.js"></script>
+</body>
+</html>
