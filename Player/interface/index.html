@@ -10,8 +10,8 @@
     <div class="head">
         <button id="open-player-btn", style="width: 20%; height: 90%; margin-right: 2vw;">Player</button>
         <button id="open-downloader-btn", style="width: 20%; height: 90%; margin-left: 2vw;">Downloader</button>
-        <input type="text" id="songname-input" placeholder="Search song" style="margin-left: 2vw;"/>
-        <button id="settings", style="width: 20%; height: 90%; margin-left: 2vw;">...</button>
+        <input type="text" id="url-input" placeholder="Song name" style="margin-left: 2vw;"/>
+        <button id="Settings", style="width: 20%; height: 90%; margin-left: 2vw;">...</button>
     </div>
 </header>
 <body>
@@ -34,7 +34,8 @@
             <div id="now-playing">
                 <p id="track-title" style="font-size: 4vh;">—</p>
                 <p id="track-artist" style="font-size: 3vh;">—</p>
-                <img id="track-cover" src="" alt="cover" style="width: 100vh; border-radius: 1rem;" />
+                <img id="track-cover" src="" alt="cover" style="max-width: 40vh; max-height: 40vh; object-fit: cover;
+                border-radius: 1rem; box-shadow: 0 0 20px rgba(0,0,0,0.5);" />
             </div>
 
             <input type="range" id="progress-bar" min="0" max="100" value="0" />
@@ -44,8 +45,7 @@
             </div>
 
             <div class="controls">
-                <button id="play-btn">▶</button>
-                <button id="pause-btn">⏸</button>
+                <button id="playpause-btn">▶</button>
             </div>
         </div>
     </div>

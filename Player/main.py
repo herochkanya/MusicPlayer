@@ -61,6 +61,9 @@ class Backend(QObject):
         super().__init__()
         self.thread_pool = QThreadPool.globalInstance()
         self.player = MusicPlayer()
+        # Пов'язуємо callback, щоб при зміні трека MusicPlayer викликав Backend.track_changed.emit(...)
+        self.player.set_track_change_callback(lambda track: self.track_changed.emit(track))
+
 
     # === Downloader ===
     @Slot(result='QStringList')
@@ -88,8 +91,19 @@ class Backend(QObject):
 
     @Slot(str, result='QVariantMap')
     def play_track(self, path):
+        # ==== Зупинка поточного треку, якщо він активний або на паузі ====
+        try:
+            playback_info = self.player.get_playback_info()
+            # Якщо щось грається або на паузі — зупиняємо
+            if playback_info['is_paused'] or playback_info['position'] > 0:
+                self.player.stop()
+        except Exception as e:
+            self.log_signal.emit(f"❌ stop previous track error: {e}")
+
+        # ==== Відтворення нового треку ====
         track = self.player.play_track(path)
-        self.track_changed.emit(track)
+        if track:
+            self.track_changed.emit(track)
         return track
 
     @Slot()
@@ -106,14 +120,44 @@ class Backend(QObject):
 
     @Slot(result='QVariantMap')
     def get_playback_info(self):
-        if not self.player or not self.player.player:
-            return {'position': 0, 'duration': 0}
         try:
-            pos = self.player.player.get_pts()
-            dur = self.player.player.get_metadata().get('duration', 0)
-            return {'position': pos, 'duration': float(dur)}
-        except:
-            return {'position': 0, 'duration': 0}
+            return self.player.get_playback_info()
+        except Exception as e:
+            self.log_signal.emit(f"❌ get_playback_info error: {e}")
+            return {'position': 0, 'duration': 0, 'is_paused': False, 'current_index': -1}
+    
+    @Slot(float)
+    def seek(self, seconds):
+        try:
+            return self.player.seek(seconds)
+        except Exception as e:
+            self.log_signal.emit(f"❌ seek error: {e}")
+            return False
+
+    @Slot(result='QVariantMap')
+    def next_track(self):
+        try:
+            res = self.player.next_track()
+            if res:
+                self.track_changed.emit(res)
+                return res
+            return {}
+        except Exception as e:
+            self.log_signal.emit(f"❌ next_track error: {e}")
+            return {}
+
+    @Slot(result='QVariantMap')
+    def prev_track(self):
+        try:
+            res = self.player.prev_track()
+            if res:
+                self.track_changed.emit(res)
+                return res
+            return {}
+        except Exception as e:
+            self.log_signal.emit(f"❌ prev_track error: {e}")
+            return {}
+
 
     @Slot()
     def close_app(self):

@@ -1,11 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // ==== DOM elements ====
     const downloaderScreen = document.getElementById('downloader-screen');
     const playerScreen = document.getElementById('player-screen');
 
     const openDownloaderBtn = document.getElementById('open-downloader-btn');
     const openPlayerBtn = document.getElementById('open-player-btn');
-    const closeBtn = document.getElementById('close-btn');
 
     const debugLog = document.getElementById('debug-log');
     const foldersList = document.getElementById('folders-list');
@@ -20,15 +18,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const trackArtist = document.getElementById('track-artist');
     const trackCover = document.getElementById('track-cover');
 
-    const playBtn = document.getElementById('play-btn');
-    const pauseBtn = document.getElementById('pause-btn');
-
+    const playBtn = document.getElementById('playpause-btn');
     const progressBar = document.getElementById('progress-bar');
     const currentTimeText = document.getElementById('current-time');
     const totalTimeText = document.getElementById('total-time');
 
     let backend;
     let currentTrackPath = null;
+    let isPlaying = false;
 
     openDownloaderBtn.addEventListener('click', () => showScreen('downloader-screen'));
     openPlayerBtn.addEventListener('click', () => showScreen('player-screen'));
@@ -43,14 +40,13 @@ document.addEventListener('DOMContentLoaded', () => {
     new QWebChannel(qt.webChannelTransport, function(channel) {
         backend = channel.objects.backend;
 
-        // Downloader
         backend.get_folders().then(folders => populateFolders(folders));
+
         backend.log_signal.connect(msg => {
             debugLog.textContent += msg + "\n";
             debugLog.scrollTop = debugLog.scrollHeight;
         });
 
-        // Player folders
         backend.get_folders().then(folders => {
             folderSelect.innerHTML = '';
             folders.forEach(folder => {
@@ -64,9 +60,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 folderSelect.appendChild(div);
             });
         });
+
+        backend.track_changed.connect(track => {
+            if (track) updateTrackInfo(track);
+        });
     });
 
-    // ==== Populate functions ====
+    // ==== Populate ====
     function populateFolders(folders) {
         foldersList.innerHTML = '';
         folders.forEach(folder => {
@@ -85,20 +85,32 @@ document.addEventListener('DOMContentLoaded', () => {
         trackList.innerHTML = '';
         tracks.forEach(track => {
             const div = document.createElement('div');
-            div.textContent = `${track.title} — ${track.artist}`;
+            const cover = track.cover_path 
+                ? `<img src="${track.cover_path.startsWith('file://') ? track.cover_path : 'file://' + track.cover_path}" 
+                        style="width:3rem;height:3rem;margin-right:0.5rem;border-radius:0.5rem;vertical-align:middle;">` 
+                : '';
+            div.innerHTML = `${cover} <span>${track.title} — ${track.artist}</span>`;
             div.addEventListener('click', () => {
                 backend.play_track(track.path).then(info => {
-                    trackTitle.textContent = info.title;
-                    trackArtist.textContent = info.artist;
-                    trackCover.src = info.cover_path || '';
+                    updateTrackInfo(info);
                     currentTrackPath = track.path;
+                    isPlaying = true;
+                    playBtn.textContent = '⏸';
                 });
             });
             trackList.appendChild(div);
         });
     }
 
-    // ==== Download controls ====
+    function updateTrackInfo(track) {
+        trackTitle.textContent = track.title || '—';
+        trackArtist.textContent = track.artist || '—';
+        trackCover.src = track.cover_path 
+            ? (track.cover_path.startsWith('file://') ? track.cover_path : 'file://' + track.cover_path)
+            : '';
+    }
+
+    // ==== Download ====
     startDownloadBtn.addEventListener('click', () => {
         const url = urlInput.value.trim();
         const folder = folderInput.value.trim() || 'downloads';
@@ -107,13 +119,22 @@ document.addEventListener('DOMContentLoaded', () => {
         backend.start_download(url, folder);
     });
 
-    // ==== Playback controls ====
+    // ==== Playback ====
     playBtn.addEventListener('click', () => {
-        if (currentTrackPath) backend.play_track(currentTrackPath);
+        if (!currentTrackPath) return;
+        if (isPlaying) {
+            backend.toggle_pause();
+            isPlaying = false;
+            playBtn.textContent = '▶';
+        } else {
+            backend.toggle_pause();
+            isPlaying = true;
+            playBtn.textContent = '⏸';
+        }
     });
-    pauseBtn.addEventListener('click', () => backend.toggle_pause());
-    closeBtn.addEventListener('click', () => backend.close_app());
 
+
+    // ==== Progress ====
     setInterval(() => {
         if (!backend || !currentTrackPath) return;
         backend.get_playback_info().then(info => {
@@ -127,6 +148,11 @@ document.addEventListener('DOMContentLoaded', () => {
             totalTimeText.textContent = formatTime(dur);
         });
     }, 1000);
+
+    progressBar.addEventListener('change', () => {
+        if (!backend || !currentTrackPath) return;
+        backend.seek(progressBar.value);
+    });
 
     function formatTime(seconds) {
         const mins = Math.floor(seconds / 60);

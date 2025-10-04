@@ -3,3 +3,4 @@ yt-dlp
 mutagen
 requests
 ffpyplayer
+python-vlc
