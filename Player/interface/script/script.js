@@ -22,6 +22,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const progressBar = document.getElementById('progress-bar');
     const currentTimeText = document.getElementById('current-time');
     const totalTimeText = document.getElementById('total-time');
+    const backBtn = document.getElementById('back-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const cycleBtn = document.getElementById('cycle-btn');
+    const randomBtn = document.getElementById('random-btn');
 
     let backend;
     let currentTrackPath = null;
@@ -47,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
             debugLog.scrollTop = debugLog.scrollHeight;
         });
 
+        // build folder list; clicking a folder will set internal playlist (not just read disk)
         backend.get_folders().then(folders => {
             folderSelect.innerHTML = '';
             folders.forEach(folder => {
@@ -55,14 +60,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 div.addEventListener('click', () => {
                     Array.from(folderSelect.children).forEach(child => child.classList.remove('selected'));
                     div.classList.add('selected');
-                    backend.list_files(folder).then(tracks => populateTracks(tracks));
+
+                    // встановлюємо playlist у backend і отримуємо playlist як список dict
+                    backend.set_playlist(folder).then(tracks => {
+                        populateTracks(tracks);
+                    });
+
+                    folderInput.value = folder;
                 });
                 folderSelect.appendChild(div);
             });
         });
 
+        // коли бекенд каже що трек змінився — оновлюємо інфо та підсвічуємо у списку
         backend.track_changed.connect(track => {
-            if (track) updateTrackInfo(track);
+            if (track) {
+                updateTrackInfo(track);
+                markPlaying(track.path);
+            }
         });
     });
 
@@ -85,21 +100,30 @@ document.addEventListener('DOMContentLoaded', () => {
         trackList.innerHTML = '';
         tracks.forEach(track => {
             const div = document.createElement('div');
+            div.classList.add('track-item');
+            div.dataset.path = track.path; // зручно для пошуку
             const cover = track.cover_path 
                 ? `<img src="${track.cover_path.startsWith('file://') ? track.cover_path : 'file://' + track.cover_path}" 
                         style="width:3rem;height:3rem;margin-right:0.5rem;border-radius:0.5rem;vertical-align:middle;">` 
                 : '';
-            div.innerHTML = `${cover} <span>${track.title} — ${track.artist}</span>`;
+            div.innerHTML = `${cover} <span>${track.title || '—'} — ${track.artist || '—'}</span>`;
+
             div.addEventListener('click', () => {
                 backend.play_track(track.path).then(info => {
-                    updateTrackInfo(info);
-                    currentTrackPath = track.path;
-                    isPlaying = true;
-                    playBtn.textContent = '⏸';
+                    if (info) {
+                        updateTrackInfo(info);
+                        currentTrackPath = track.path;
+                        isPlaying = true;
+                        playBtn.textContent = '⏸';
+                        markPlaying(track.path);
+                    }
                 });
             });
             trackList.appendChild(div);
         });
+
+        // після (ре)побудови списку — підсвітити поточний, якщо він відомий
+        if (currentTrackPath) markPlaying(currentTrackPath);
     }
 
     function updateTrackInfo(track) {
@@ -108,6 +132,21 @@ document.addEventListener('DOMContentLoaded', () => {
         trackCover.src = track.cover_path 
             ? (track.cover_path.startsWith('file://') ? track.cover_path : 'file://' + track.cover_path)
             : '';
+    }
+
+    function markPlaying(path) {
+        // знімаємо клас playing з усіх
+        Array.from(trackList.children).forEach(div => {
+            div.classList.remove('playing');
+        });
+        if (!path) return;
+        // знаходимо елемент з data-path
+        const el = Array.from(trackList.children).find(div => div.dataset.path === path);
+        if (el) {
+            el.classList.add('playing');
+            // прокрутимо трохи, щоб було видно
+            el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
     }
 
     // ==== Download ====
@@ -122,17 +161,35 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==== Playback ====
     playBtn.addEventListener('click', () => {
         if (!currentTrackPath) return;
-        if (isPlaying) {
-            backend.toggle_pause();
-            isPlaying = false;
-            playBtn.textContent = '▶';
-        } else {
-            backend.toggle_pause();
-            isPlaying = true;
-            playBtn.textContent = '⏸';
-        }
+        backend.toggle_pause();
+        isPlaying = !isPlaying;
+        playBtn.textContent = isPlaying ? '⏸' : '▶';
     });
 
+    // ==== Next / Prev ====
+    backBtn.addEventListener('click', () => {
+        backend.prev_track().then(track => {
+            if (track && track.path) {
+                updateTrackInfo(track);
+                currentTrackPath = track.path;
+                isPlaying = true;
+                playBtn.textContent = '⏸';
+                markPlaying(track.path);
+            }
+        });
+    });
+
+    nextBtn.addEventListener('click', () => {
+        backend.next_track().then(track => {
+            if (track && track.path) {
+                updateTrackInfo(track);
+                currentTrackPath = track.path;
+                isPlaying = true;
+                playBtn.textContent = '⏸';
+                markPlaying(track.path);
+            }
+        });
+    });
 
     // ==== Progress ====
     setInterval(() => {
@@ -159,4 +216,37 @@ document.addEventListener('DOMContentLoaded', () => {
         const secs = Math.floor(seconds % 60);
         return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
     }
+
+    // ===== Cycle button =====
+    let cycleMode = 0; // 0 = off, 1 = all, 2 = one
+    cycleBtn.addEventListener('click', () => {
+        cycleMode = (cycleMode + 1) % 3;
+        switch (cycleMode) {
+            case 0:
+                cycleBtn.textContent = '🗘';
+                backend.set_cycle_mode(0);
+                break;
+            case 1:
+                cycleBtn.textContent = '🔁';
+                backend.set_cycle_mode(1);
+                break;
+            case 2:
+                cycleBtn.textContent = '🔂';
+                backend.set_cycle_mode(2);
+                break;
+        }
+    });
+
+    // ===== Shuffle / Random =====
+    randomBtn.addEventListener('click', () => {
+        // toggle_shuffle повертає bool (on/off)
+        backend.toggle_shuffle().then(shuffle_on => {
+            // після зміни shuffle — отримуємо поточний internal playlist і перебудовуємо UI
+            backend.get_playlist().then(tracks => {
+                populateTracks(tracks);
+                // якщо shuffle включився, змінюємо текст і підсвічуємо
+                randomBtn.textContent = shuffle_on ? '🔀' : '🎵';
+            });
+        });
+    });
 });

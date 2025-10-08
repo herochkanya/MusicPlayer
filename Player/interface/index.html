@@ -10,7 +10,7 @@
     <div class="head">
         <button id="open-player-btn", style="width: 20%; height: 90%; margin-right: 2vw;">Player</button>
         <button id="open-downloader-btn", style="width: 20%; height: 90%; margin-left: 2vw;">Downloader</button>
-        <input type="text" id="url-input" placeholder="Song name" style="margin-left: 2vw;"/>
+        <input type="text" id="text-input" placeholder="Song name" style="margin-left: 2vw;"/>
         <button id="Settings", style="width: 20%; height: 90%; margin-left: 2vw;">...</button>
     </div>
 </header>
@@ -30,22 +30,30 @@
         </div>
 
         <div style="display: flex; flex-direction: column; margin: auto;
-        justify-content: center; align-items: center;">
+        margin-bottom: 10vh; margin-top: 10vh; justify-content: center; align-items: center;">
             <div id="now-playing">
-                <p id="track-title" style="font-size: 4vh;">—</p>
-                <p id="track-artist" style="font-size: 3vh;">—</p>
-                <img id="track-cover" src="" alt="cover" style="max-width: 40vh; max-height: 40vh; object-fit: cover;
+                <img id="track-cover" src="" style="max-width: 40vh; max-height: 40vh; min-width: 40vh; min-height: 40vh; object-fit: cover;
                 border-radius: 1rem; box-shadow: 0 0 20px rgba(0,0,0,0.5);" />
+                <p id="track-title" style="font-size: 3vh; margin-top: 1px;"></p>
+                <p id="track-artist" style="font-size: 2vh; margin-top: 1px;"></p>
             </div>
 
             <input type="range" id="progress-bar" min="0" max="100" value="0" />
+
             <div class="time-display">
-                <span id="current-time">0:00</span>
+                <span id="current-time" style="margin-right: 6vw;">0:00</span>
                 <span id="total-time">0:00</span>
             </div>
 
             <div class="controls">
+                <button id="back-btn">⦉</button>
                 <button id="playpause-btn">▶</button>
+                <button id="next-btn">⦊</button>
+            </div>
+
+            <div class="controls">
+                <button id="cycle-btn">🗘</button>
+                <button id="random-btn">🎵</button>
             </div>
         </div>
     </div>

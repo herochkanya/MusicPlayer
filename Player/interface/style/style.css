@@ -136,7 +136,7 @@ button:hover {
 }
 
 .scroll-list div.selected {
-    background-color: rgba(90, 170, 255, 0.4);
+    background-color: rgba(90, 255, 192, 0.262);
 }
 
 .debug-log {
@@ -173,4 +173,17 @@ button:hover {
 
 ::-webkit-scrollbar {
     display: none;
+}
+
+#random-btn.active {
+    background: rgba(83, 255, 198, 0.4);
+    transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(83, 255, 198, 0.3);
+}
+
+.scroll-list div.playing {
+    background: linear-gradient(90deg, rgba(72, 255, 224, 0.3), rgba(72, 255, 224, 0.1));
+    border-left: 4px solid var(--accent);
+    font-weight: bold;
+    transition: background 0.3s ease;
 }

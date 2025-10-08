@@ -1,8 +1,6 @@
 # player_logic.py
-import os
-import time
-import vlc
-from threading import Lock
+import os, time, vlc, random
+from threading import RLock, Thread
 from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, APIC
 from typing import Optional, Callable, List, Dict
@@ -75,7 +73,7 @@ class TrackInfo:
 
 
 class MusicPlayer:
-    """Надійний плеєр на базі python-vlc."""
+    """Стабільний плеєр із автопереходом на наступний трек."""
     def __init__(self):
         self.base_dir = get_music_base_dir()
         self.instance = vlc.Instance("--no-video", "--quiet")
@@ -85,8 +83,14 @@ class MusicPlayer:
         self.current_index = -1
         self.is_paused = False
         self.is_playing = False
-        self._lock = Lock()
+        self._lock = RLock()
         self._track_change_callback: Optional[Callable[[Dict], None]] = None
+        self._auto_next_enabled = True  # щоб можна було вимкнути автоперехід, якщо треба
+        self._cycle_mode = 0  # 0=off, 1=all, 2=one
+        self._shuffle_mode = False
+        self._original_playlist: List[str] = []
+    
+    
 
     # ---------- Utility ----------
     def _build_playlist_for_path(self, path: str) -> List[str]:
@@ -103,6 +107,76 @@ class MusicPlayer:
 
     def set_track_change_callback(self, cb: Callable[[Dict], None]):
         self._track_change_callback = cb
+    
+    def toggle_shuffle(self):
+        """Перемикає режим shuffle і повертає стан."""
+        with self._lock:
+            self._shuffle_mode = not self._shuffle_mode
+            # зберігаємо поточний шлях, щоб не загубити те, що грає зараз
+            cur_path = None
+            if self.current_track:
+                cur_path = self.current_track.path
+
+            if self._shuffle_mode:
+                # зберігаємо оригінал і перемішуємо (поточний трек залишаємо на своїй позиції або переміщаємо в початок)
+                self._original_playlist = self.playlist.copy()
+                if cur_path and cur_path in self.playlist:
+                    rest = [p for p in self.playlist if p != cur_path]
+                    random.shuffle(rest)
+                    self.playlist = [cur_path] + rest
+                    self.current_index = 0
+                else:
+                    random.shuffle(self.playlist)
+                    # якщо поточний трек є в новому списку — обновимо індекс
+                    if cur_path and cur_path in self.playlist:
+                        self.current_index = self.playlist.index(cur_path)
+                    else:
+                        self.current_index = -1
+            else:
+                # відновлюємо оригінальний порядок, якщо він є
+                if self._original_playlist:
+                    # зберігаємо поточний шлях (щоб знайти індекс у відновленому arr)
+                    cur = None
+                    if 0 <= self.current_index < len(self.playlist):
+                        cur = self.playlist[self.current_index]
+                    self.playlist = self._original_playlist.copy()
+                    if cur and cur in self.playlist:
+                        self.current_index = self.playlist.index(cur)
+                    else:
+                        self.current_index = -1
+                self._original_playlist = []
+            return self._shuffle_mode
+
+    def get_playlist_dicts(self) -> List[Dict]:
+        """Повертає поточний playlist як список dict (для UI)."""
+        with self._lock:
+            return [TrackInfo(path).as_dict() for path in self.playlist]
+
+    def set_playlist_from_folder(self, folder: str) -> List[Dict]:
+        """
+        Заповнити internal playlist файлами з теки (sorted).
+        Повертає список dict (TrackInfo) — зручно для UI.
+        Не починає відтворення, просто встановлює playlist.
+        """
+        with self._lock:
+            target_dir = os.path.join(self.base_dir, folder)
+            try:
+                items = sorted([
+                    os.path.join(target_dir, f)
+                    for f in os.listdir(target_dir)
+                    if f.lower().endswith('.mp3')
+                ])
+            except Exception:
+                items = []
+
+            self.playlist = items
+            # Якщо зараз грає якийсь трек — оновити current_index, інакше -1
+            if self.current_track and self.current_track.path in self.playlist:
+                self.current_index = self.playlist.index(self.current_track.path)
+            else:
+                self.current_index = -1
+
+            return [TrackInfo(p).as_dict() for p in self.playlist]
 
     # ---------- Core control ----------
     def play_track(self, path: Optional[str] = None, index: Optional[int] = None) -> Optional[Dict]:
@@ -115,7 +189,13 @@ class MusicPlayer:
                 else:
                     return None
             elif path:
-                self.playlist = self._build_playlist_for_path(path)
+                # 🟢 ВИПРАВЛЕНО: не перебудовуємо playlist, якщо shuffle активний
+                if not self._shuffle_mode:
+                    self.playlist = self._build_playlist_for_path(path)
+                else:
+                    # Якщо shuffle активний, але трек не входить у список — додаємо його
+                    if path not in self.playlist:
+                        self.playlist.append(path)
                 try:
                     self.current_index = self.playlist.index(path)
                 except ValueError:
@@ -150,6 +230,7 @@ class MusicPlayer:
                     pass
 
             return self.current_track.as_dict()
+
 
     def toggle_pause(self):
         with self._lock:
@@ -191,14 +272,40 @@ class MusicPlayer:
 
     def next_track(self) -> Optional[Dict]:
         with self._lock:
+            if not self.playlist:
+                return None
+
+            # Якщо є наступний — просто переходимо
             if self.current_index + 1 < len(self.playlist):
                 return self.play_track(index=self.current_index + 1)
+
+            # Якщо кінець списку
+            if self._cycle_mode == 1:
+                # Повтор усіх
+                return self.play_track(index=0)
+            elif self._cycle_mode == 2:
+                # Повтор поточного
+                return self.play_track(index=self.current_index)
+
+            # Інакше — нічого
             return None
 
     def prev_track(self) -> Optional[Dict]:
         with self._lock:
+            if not self.playlist:
+                return None
+
             if self.current_index - 1 >= 0:
                 return self.play_track(index=self.current_index - 1)
+
+            # Якщо натиснули “⦉” на першому треку
+            if self._cycle_mode == 1:
+                # Йдемо на останній трек
+                return self.play_track(index=len(self.playlist) - 1)
+            elif self._cycle_mode == 2:
+                # Повтор поточного
+                return self.play_track(index=self.current_index)
+
             return None
 
     # ---------- Info ----------
@@ -236,12 +343,39 @@ class MusicPlayer:
 
     # ---------- Event binding ----------
     def _bind_events(self):
+        """Підключення обробників подій VLC."""
         if not self.player:
             return
         events = self.player.event_manager()
         events.event_attach(vlc.EventType.MediaPlayerEndReached, self._on_end)
 
     def _on_end(self, event):
-        """Автоматичний перехід на наступний трек."""
-        time.sleep(0.05)
-        self.next_track()
+        if not self._auto_next_enabled:
+            return
+
+        def delayed_next():
+            time.sleep(0.2)
+            with self._lock:
+                if self._cycle_mode == 2:
+                    # повтор одного
+                    self.play_track(index=self.current_index)
+                elif self.current_index + 1 < len(self.playlist):
+                    self.next_track()
+                elif self._cycle_mode == 1:
+                    # повтор усіх
+                    self.play_track(index=0)
+                else:
+                    self.is_playing = False
+                    self.is_paused = False
+                    print("✅ Playlist finished.")
+
+        Thread(target=delayed_next, daemon=True).start()
+    
+    def is_active(self) -> bool:
+        """Повертає True, якщо зараз грає або на паузі."""
+        with self._lock:
+            return bool(self.player and (self.is_playing or self.is_paused))
+
+    def set_cycle_mode(self, mode: int):
+        with self._lock:
+            self._cycle_mode = mode
