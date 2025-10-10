@@ -67,6 +67,13 @@ def download_audio(url: str, target_folder: str = None) -> dict | list | None:
         'outtmpl': os.path.join(download_dir, '%(title)s.%(ext)s'),
         'quiet': True,
         'no_warnings': True,
+        'noplaylist': False,
+        'retries': 10,                  # кількість повторів при обриві
+        'continuedl': True,             # дозвіл на дозавантаження
+        'ratelimit': 1024*1024,         # ліміт швидкості (1 MB/s) — щоб не відрубало
+        'socket_timeout': 30,           # таймаут сокету
+        'verbose': False,
+        'fragment_retries': 10,         # для потокових фрагментів
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',

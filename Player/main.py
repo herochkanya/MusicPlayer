@@ -184,6 +184,14 @@ class Backend(QObject):
         except Exception as e:
             self.log_signal.emit(f"❌ set_playlist_from_folder error: {e}")
             return []
+    
+    @Slot(result='QVariantList')
+    def set_global_playlist(self):
+        try:
+            return self.player.set_global_playlist()
+        except Exception as e:
+            self.log_signal.emit(f"❌ set_global_playlist error: {e}")
+            return []
 
     @Slot()
     def close_app(self):

@@ -93,6 +93,18 @@ class MusicPlayer:
     
 
     # ---------- Utility ----------
+    def set_global_playlist(self) -> List[Dict]:
+        """Створює плейліст із усіх mp3 у всіх підпапках."""
+        with self._lock:
+            items = []
+            for root, _, files in os.walk(self.base_dir):
+                for f in sorted(files):
+                    if f.lower().endswith('.mp3'):
+                        items.append(os.path.join(root, f))
+            self.playlist = items
+            self.current_index = -1
+            return [TrackInfo(p).as_dict() for p in self.playlist]
+
     def _build_playlist_for_path(self, path: str) -> List[str]:
         directory = os.path.dirname(path)
         try:

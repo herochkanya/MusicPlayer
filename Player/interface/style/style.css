@@ -7,13 +7,26 @@
     --accent: #48ffe048;
 }
 
+/* ===== Базова структура ===== */
+
 * {
     box-sizing: border-box;
 }
 
 header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 10vh;
+    display: flex;
     justify-content: center;
     align-items: center;
+    background: var(--glass-color);
+    border-bottom: 1px solid var(--border-glass);
+    z-index: 1100;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    border-radius: 0 0 1.5rem 1.5rem;
 }
 
 body {
@@ -22,30 +35,22 @@ body {
     padding: 2vh 4vw;
     min-width: 320px;
     min-height: 480px;
-    background: linear-gradient(135deg, #24574d, #247175, #0d6b5b);
+    background: linear-gradient(135deg, #16423b, #0d635d, #0b4f41);
+    background-size: 300% 300%;
+    animation: bgFlow 25s ease infinite;
     color: var(--text-color);
+    display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.screen {
-    display: none;
-    max-width: 90vw;
-    margin: 0 auto;
-    padding: 3vh 3vw;
-    background: var(--glass-color);
-    border: 1px solid var(--border-glass);
-    border-radius: 1.5rem;
-    backdrop-filter: blur(var(--background-blur));
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-    transition: opacity 0.3s ease;
-    height: 82vh;
-    margin-top: 12vh;
+@keyframes bgFlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
-.screen.active {
-    display: flex;
-}
+/* ===== Верхня панель ===== */
 
 .head {
     max-width: 95vw;
@@ -55,23 +60,52 @@ body {
     backdrop-filter: blur(var(--background-blur));
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
     transition: opacity 0.3s ease;
-    margin-left: 0%;
-    position: fixed; 
-    width: 92vw; 
-    height: 10vh; 
-    z-index: 1000; 
-    display: flex; 
-    flex-direction: row; 
-    align-items: center; 
+    position: fixed;
+    width: 92vw;
+    height: 10vh;
+    z-index: 1000;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
     justify-content: center;
 }
+
+/* ===== Екрани ===== */
+
+.screen {
+    display: none;
+    opacity: 0;
+    transform: translateX(30px);
+    max-width: 90vw;
+    margin: 0 auto;
+    padding: 3vh 3vw;
+    background: var(--glass-color);
+    border: 1px solid var(--border-glass);
+    border-radius: 1.5rem;
+    backdrop-filter: blur(var(--background-blur));
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    height: 82vh;
+    margin-top: 12vh;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.screen.active {
+    display: flex;
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* ===== Заголовки ===== */
 
 h2 {
     text-align: center;
     font-size: clamp(1.5rem, 2.5vw, 2.5rem);
     margin-bottom: 2vh;
     color: var(--text-color);
+    letter-spacing: 1px;
 }
+
+/* ===== Ввід ===== */
 
 input[type="text"],
 input[type="range"] {
@@ -95,6 +129,8 @@ input[type="text"]:focus {
     background: rgba(255, 255, 255, 0.3);
 }
 
+/* ===== Кнопки ===== */
+
 button {
     padding: 1vh 2vw;
     font-size: clamp(1rem, 1.5vw, 1.2rem);
@@ -104,14 +140,22 @@ button {
     border-radius: 1rem;
     cursor: pointer;
     margin: 1vh 0;
-    transition: background 0.3s ease, transform 0.2s ease;
     width: 100%;
+    transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
 }
 
 button:hover {
     background: #17ffe086;
-    transform: scale(1.02);
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(72, 255, 224, 0.3);
 }
+
+button:active {
+    transform: scale(0.95);
+    box-shadow: 0 0 10px rgba(72, 255, 224, 0.4);
+}
+
+/* ===== Прокручуваний список ===== */
 
 .scroll-list {
     max-height: 70vh;
@@ -121,6 +165,7 @@ button:hover {
     border-radius: 1rem;
     padding: 1vh;
     margin-bottom: 2vh;
+    backdrop-filter: blur(8px);
 }
 
 .scroll-list div {
@@ -139,6 +184,102 @@ button:hover {
     background-color: rgba(90, 255, 192, 0.262);
 }
 
+/* Активний трек */
+.scroll-list div.playing {
+    background: linear-gradient(90deg, rgba(72, 255, 224, 0.3), rgba(72, 255, 224, 0.1));
+    border-left: 4px solid var(--accent);
+    font-weight: bold;
+    animation: glowPulse 2s infinite ease-in-out;
+}
+
+@keyframes glowPulse {
+    0%, 100% { box-shadow: 0 0 10px rgba(72, 255, 224, 0.1); }
+    50% { box-shadow: 0 0 20px rgba(72, 255, 224, 0.4); }
+}
+
+/* ===== Обкладинка треку ===== */
+
+#track-cover {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 1rem;
+    box-shadow: 0 0 30px rgba(72, 255, 224, 0.2);
+    transition: transform 0.8s ease, opacity 0.8s ease, box-shadow 1s ease;
+    opacity: 0.9;
+}
+
+#track-cover.change {
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+/* ===== Прогресбар ===== */
+
+.progress-container {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 1vh;
+}
+
+.progress-bar {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #00ffc8, #00ff99, #00ffc8);
+    background-size: 200% 100%;
+    animation: progressFlow 5s linear infinite;
+    transition: width 0.4s ease;
+}
+
+@keyframes progressFlow {
+    0% { background-position: 0% 0%; }
+    100% { background-position: -200% 0%; }
+}
+
+/* ===== Час ===== */
+
+.time-display {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    margin-top: 0.5vh;
+}
+
+/* ===== Контролери ===== */
+
+.controls {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1vh;
+}
+
+/* ===== Зараз грає ===== */
+
+#now-playing {
+    margin-top: 2vh;
+    text-align: center;
+}
+
+/* ===== Смуга прокрутки ===== */
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+/* ===== Кнопка рандому ===== */
+
+#random-btn.active {
+    background: rgba(83, 255, 198, 0.4);
+    transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(83, 255, 198, 0.3);
+}
+
+/* ===== Debug log ===== */
+
 .debug-log {
     background: rgba(0, 19, 11, 0.6);
     color: #00ff88;
@@ -152,38 +293,13 @@ button:hover {
     margin-top: 2vh;
 }
 
-.time-display {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.9rem;
-    margin-top: 0.5vh;
+/* ===== Анімація переходів між екранами ===== */
+
+@keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.controls {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    margin-top: 1vh;
-}
-
-#now-playing {
-    margin-top: 2vh;
-    text-align: center;
-}
-
-::-webkit-scrollbar {
-    display: none;
-}
-
-#random-btn.active {
-    background: rgba(83, 255, 198, 0.4);
-    transform: scale(1.05);
-    box-shadow: 0 0 10px rgba(83, 255, 198, 0.3);
-}
-
-.scroll-list div.playing {
-    background: linear-gradient(90deg, rgba(72, 255, 224, 0.3), rgba(72, 255, 224, 0.1));
-    border-left: 4px solid var(--accent);
-    font-weight: bold;
-    transition: background 0.3s ease;
+.screen.active {
+    animation: fadeSlide 0.6s ease;
 }

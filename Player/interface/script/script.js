@@ -26,18 +26,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextBtn = document.getElementById('next-btn');
     const cycleBtn = document.getElementById('cycle-btn');
     const randomBtn = document.getElementById('random-btn');
+    const searchInput = document.getElementById('text-input');
+
+    const globalBtn = document.getElementById('open-global-btn');
 
     let backend;
     let currentTrackPath = null;
     let isPlaying = false;
+    let playerOriginalHeight = null;
 
     openDownloaderBtn.addEventListener('click', () => showScreen('downloader-screen'));
     openPlayerBtn.addEventListener('click', () => showScreen('player-screen'));
     showScreen('player-screen');
 
     function showScreen(id) {
-        [downloaderScreen, playerScreen].forEach(screen => screen.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
+        [downloaderScreen, playerScreen].forEach(screen => {
+            screen.classList.remove('active');
+        });
+        const activeScreen = document.getElementById(id);
+        activeScreen.style.display = 'flex';
+        setTimeout(() => activeScreen.classList.add('active'), 10);
     }
 
     // ==== QWebChannel ====
@@ -129,25 +137,55 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateTrackInfo(track) {
         trackTitle.textContent = track.title || '—';
         trackArtist.textContent = track.artist || '—';
-        trackCover.src = track.cover_path 
-            ? (track.cover_path.startsWith('file://') ? track.cover_path : 'file://' + track.cover_path)
-            : '';
+
+        // Додатковий ефект для плавної зміни обкладинки
+        trackCover.classList.add('change');
+        setTimeout(() => {
+            trackCover.src = track.cover_path 
+                ? (track.cover_path.startsWith('file://') ? track.cover_path : 'file://' + track.cover_path)
+                : '';
+            trackCover.classList.remove('change');
+        }, 300);
     }
 
+    // Підсвічування треку та пульсація
     function markPlaying(path) {
-        // знімаємо клас playing з усіх
-        Array.from(trackList.children).forEach(div => {
-            div.classList.remove('playing');
-        });
+        Array.from(trackList.children).forEach(div => div.classList.remove('playing'));
         if (!path) return;
-        // знаходимо елемент з data-path
         const el = Array.from(trackList.children).find(div => div.dataset.path === path);
         if (el) {
             el.classList.add('playing');
-            // прокрутимо трохи, щоб було видно
             el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         }
     }
+
+    function toggleDownloader(show) {
+        if (show) {
+            // зберегти початковий розмір плеєра
+            if (!playerOriginalHeight)
+                playerOriginalHeight = playerScreen.offsetHeight;
+
+            playerScreen.style.transition = 'all 0.6s ease';
+            playerScreen.style.transform = 'scale(0.9)';
+            playerScreen.style.opacity = '0.5';
+            playerScreen.style.pointerEvents = 'none';
+
+            downloaderScreen.style.display = 'flex';
+            setTimeout(() => downloaderScreen.classList.add('active'), 10);
+        } else {
+            downloaderScreen.classList.remove('active');
+            setTimeout(() => {
+                downloaderScreen.style.display = 'none';
+                playerScreen.style.transition = 'all 0.6s ease';
+                playerScreen.style.transform = 'scale(1)';
+                playerScreen.style.opacity = '1';
+                playerScreen.style.pointerEvents = 'auto';
+            }, 400);
+        }
+    }
+
+    openDownloaderBtn.addEventListener('click', () => toggleDownloader(true));
+    openPlayerBtn.addEventListener('click', () => toggleDownloader(false));
 
     // ==== Download ====
     startDownloadBtn.addEventListener('click', () => {
@@ -247,6 +285,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 // якщо shuffle включився, змінюємо текст і підсвічуємо
                 randomBtn.textContent = shuffle_on ? '🔀' : '🎵';
             });
+        });
+    });
+
+    // === Live search ===
+    searchInput.addEventListener('input', () => {
+        const query = searchInput.value.trim().toLowerCase();
+
+        Array.from(trackList.children).forEach(div => {
+            const title = div.querySelector('span')?.textContent.toLowerCase() || '';
+            if (title.includes(query)) {
+                div.style.display = ''; // показати
+            } else {
+                div.style.display = 'none'; // сховати
+            }
+        });
+    });
+
+    globalBtn.addEventListener('click', () => {
+        Array.from(folderSelect.children).forEach(child => child.classList.remove('selected'));
+        globalBtn.classList.add('selected');
+        backend.set_global_playlist().then(tracks => {
+            populateTracks(tracks);
         });
     });
 });
