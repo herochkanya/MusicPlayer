@@ -1,10 +1,53 @@
-:root {
-    --background-blur: 20px;
+
+
+/* Теми */
+:root[data-theme="green"] {
     --glass-color: rgba(255, 255, 255, 0.15);
     --border-glass: rgba(255, 255, 255, 0.3);
     --text-color: #f5f6fc;
     --highlight: rgba(83, 255, 198, 0.3);
     --accent: #48ffe048;
+    --body-gradient: linear-gradient(135deg, #16423b, #0d635d, #0b4f41);
+    --time-color: #b8fff0;
+    --scroll-bg: rgba(255, 255, 255, 0.1);
+    --input-bg: rgba(255, 255, 255, 0.2);
+    --input-focus-bg: rgba(255, 255, 255, 0.3);
+    --progress-gradient: linear-gradient(90deg, #00ffc8, #00ff99, #00ffc8);
+    --thumb-gradient: radial-gradient(circle at 30% 30%, #b8fff0, #00ffc8 80%);
+    --thumb-active-gradient: radial-gradient(circle at 30% 30%, #ffffff, #00ffcc 70%);
+}
+
+:root[data-theme="dark"] {
+    --glass-color: rgba(20, 20, 20, 0.35);
+    --border-glass: rgba(80, 80, 80, 0.4);
+    --text-color: #e0e0e0;
+    --highlight: rgba(217, 0, 255, 0.3);
+    --accent: #bb00ffa0;
+    --body-gradient: linear-gradient(135deg, #0a0a0a, #1a1a1a, #0f0f0f);
+    --time-color: #d333ff;
+    --scroll-bg: rgba(50, 50, 50, 0.3);
+    --input-bg: rgba(30, 30, 30, 0.3);
+    --input-focus-bg: rgba(50, 50, 50, 0.5);
+    --progress-gradient: linear-gradient(90deg, #9000ff, #aa00ff, #9900ff);
+    --thumb-gradient: radial-gradient(circle at 30% 30%, #a733ff, #a200ff 80%);
+    --thumb-active-gradient: radial-gradient(circle at 30% 30%, #ffffff, #d000ff 70%);
+}
+
+:root[data-theme="light"] {
+    --glass-color: rgba(130, 128, 128, 0.7);
+    --border-glass: rgba(200, 200, 200, 0.5);
+    --text-color: #2a2a2a;
+    --highlight: rgba(69, 69, 69, 0.2);
+    --accent: #656565a0;
+    --body-gradient: linear-gradient(135deg, #c0bfbf, #bebebe, #a3a3a3);
+    --time-color: #414141;
+    --scroll-bg: rgba(255, 255, 255, 0.3);
+    --input-bg: rgba(255, 255, 255, 0.5);
+    --input-focus-bg: rgba(156, 155, 155, 0.7);
+    --progress-gradient: linear-gradient(90deg, #535353, #6a6a6a, #393939);
+    --thumb-gradient: radial-gradient(circle at 30% 30%, #838383, #484848 80%);
+    --thumb-active-gradient: radial-gradient(circle at 30% 30%, #aaaaaa, #4d4d4d 70%);
+    --placeholder-color: #2a2a2a;
 }
 
 /* ===== Базова структура ===== */
@@ -35,7 +78,7 @@ body {
     padding: 2vh 4vw;
     min-width: 320px;
     min-height: 480px;
-    background: linear-gradient(135deg, #16423b, #0d635d, #0b4f41);
+    background: var(--body-gradient);
     background-size: 300% 300%;
     animation: bgFlow 25s ease infinite;
     color: var(--text-color);
@@ -68,6 +111,8 @@ body {
     flex-direction: row;
     align-items: center;
     justify-content: center;
+    padding-left: 1vh;
+    padding-right: 1vh;
 }
 
 /* ===== Екрани ===== */
@@ -76,7 +121,7 @@ body {
     display: none;
     opacity: 0;
     transform: translateX(30px);
-    max-width: 90vw;
+    max-width: 100vw;
     margin: 0 auto;
     padding: 3vh 3vw;
     background: var(--glass-color);
@@ -84,8 +129,8 @@ body {
     border-radius: 1.5rem;
     backdrop-filter: blur(var(--background-blur));
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-    height: 82vh;
-    margin-top: 12vh;
+    height: 84vh;
+    margin-top: 11vh;
     transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
@@ -114,8 +159,8 @@ input[type="range"] {
     margin-bottom: 1.5vh;
     border: none;
     border-radius: 0.8rem;
-    background: rgba(255, 255, 255, 0.2);
-    color: #fff;
+    background: var(--input-bg);
+    color: var(--text-color);
     font-size: clamp(1rem, 1.2vw, 1.2rem);
     outline: none;
     transition: background 0.3s ease;
@@ -126,7 +171,7 @@ input[type="text"]::placeholder {
 }
 
 input[type="text"]:focus {
-    background: rgba(255, 255, 255, 0.3);
+    background: var(--input-focus-bg);
 }
 
 /* ===== Кнопки ===== */
@@ -134,25 +179,27 @@ input[type="text"]:focus {
 button {
     padding: 1vh 2vw;
     font-size: clamp(1rem, 1.5vw, 1.2rem);
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
     background: var(--accent);
     color: white;
     border: 1px solid var(--border-glass);
     border-radius: 1rem;
     cursor: pointer;
     margin: 1vh 0;
-    width: 100%;
     transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
 }
 
 button:hover {
-    background: #17ffe086;
+    background: var(--highlight);
     transform: scale(1.05);
-    box-shadow: 0 0 15px rgba(72, 255, 224, 0.3);
+    box-shadow: 0 0 15px var(--highlight);
 }
 
 button:active {
     transform: scale(0.95);
-    box-shadow: 0 0 10px rgba(72, 255, 224, 0.4);
+    box-shadow: 0 0 10px var(--highlight);
 }
 
 /* ===== Прокручуваний список ===== */
@@ -160,7 +207,7 @@ button:active {
 .scroll-list {
     max-height: 70vh;
     overflow-y: auto;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--scroll-bg);
     border: 1px solid var(--border-glass);
     border-radius: 1rem;
     padding: 1vh;
@@ -181,20 +228,19 @@ button:active {
 }
 
 .scroll-list div.selected {
-    background-color: rgba(90, 255, 192, 0.262);
+    background-color: var(--highlight);
 }
 
-/* Активний трек */
 .scroll-list div.playing {
-    background: linear-gradient(90deg, rgba(72, 255, 224, 0.3), rgba(72, 255, 224, 0.1));
+    background: var(--progress-gradient);
     border-left: 4px solid var(--accent);
     font-weight: bold;
     animation: glowPulse 2s infinite ease-in-out;
 }
 
 @keyframes glowPulse {
-    0%, 100% { box-shadow: 0 0 10px rgba(72, 255, 224, 0.1); }
-    50% { box-shadow: 0 0 20px rgba(72, 255, 224, 0.4); }
+    0%, 100% { box-shadow: 0 0 10px var(--highlight); }
+    50% { box-shadow: 0 0 20px var(--highlight); }
 }
 
 /* ===== Обкладинка треку ===== */
@@ -204,7 +250,7 @@ button:active {
     height: 200px;
     object-fit: cover;
     border-radius: 1rem;
-    box-shadow: 0 0 30px rgba(72, 255, 224, 0.2);
+    box-shadow: 0 0 30px var(--highlight);
     transition: transform 0.8s ease, opacity 0.8s ease, box-shadow 1s ease;
     opacity: 0.9;
 }
@@ -219,7 +265,7 @@ button:active {
 .progress-container {
     width: 100%;
     height: 6px;
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--input-bg);
     border-radius: 4px;
     overflow: hidden;
     margin-top: 1vh;
@@ -228,7 +274,7 @@ button:active {
 .progress-bar {
     width: 0%;
     height: 100%;
-    background: linear-gradient(90deg, #00ffc8, #00ff99, #00ffc8);
+    background: var(--progress-gradient);
     background-size: 200% 100%;
     animation: progressFlow 5s linear infinite;
     transition: width 0.4s ease;
@@ -244,8 +290,10 @@ button:active {
 .time-display {
     display: flex;
     justify-content: space-between;
+    font-family: 'Courier New', monospace;
+    color: var(--time-color);
     font-size: 0.9rem;
-    margin-top: 0.5vh;
+    margin-top: -1vh;
 }
 
 /* ===== Контролери ===== */
@@ -253,6 +301,7 @@ button:active {
 .controls {
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 1rem;
     margin-top: 1vh;
 }
@@ -273,9 +322,9 @@ button:active {
 /* ===== Кнопка рандому ===== */
 
 #random-btn.active {
-    background: rgba(83, 255, 198, 0.4);
+    background: var(--highlight);
     transform: scale(1.05);
-    box-shadow: 0 0 10px rgba(83, 255, 198, 0.3);
+    box-shadow: 0 0 10px var(--highlight);
 }
 
 /* ===== Debug log ===== */
@@ -302,4 +351,95 @@ button:active {
 
 .screen.active {
     animation: fadeSlide 0.6s ease;
+}
+
+#open-set-btn.active {
+    background: var(--highlight);
+    border: 1px solid var(--highlight);
+}
+
+.playlist-item.selected-set {
+    background: var(--highlight);
+    border-color: var(--highlight);
+}
+
+/* === СЛАЙДЕР ПРОГРЕСУ === */
+
+.track-slider {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 80%;
+    height: 0.9vh;
+    border-radius: 2rem;
+    background: linear-gradient(90deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+    box-shadow:
+        inset 0 0 6px rgba(0,0,0,0.3),
+        0 0 10px var(--highlight);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: box-shadow 0.4s ease, transform 0.3s ease;
+    margin-bottom: 1vh;
+}
+
+.track-slider:hover {
+    box-shadow:
+        inset 0 0 8px var(--highlight),
+        0 0 15px var(--highlight);
+    transform: scale(1.01);
+}
+
+.track-slider::-webkit-slider-runnable-track {
+    height: 0.9vh;
+    background: var(--progress-gradient);
+    border-radius: 2rem;
+    box-shadow: inset 0 0 10px var(--highlight);
+}
+
+.track-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 2vh;
+    height: 2vh;
+    margin-top: -0.55vh;
+    border-radius: 50%;
+    background: var(--thumb-gradient);
+    box-shadow: 0 0 10px var(--highlight), inset 0 0 6px rgba(0,0,0,0.4);
+    transition: all 0.2s ease-in-out;
+}
+
+.track-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 20px var(--highlight), inset 0 0 8px rgba(0,0,0,0.6);
+}
+
+.track-slider:active::-webkit-slider-thumb {
+    transform: scale(1.3);
+    background: var(--thumb-active-gradient);
+}
+
+/* ===== Емоджі-кнопки та анімації ===== */
+
+.emoji-button {
+    font-size: 2rem;
+    flex: 0 0 auto;
+    padding: auto;
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+}
+
+@keyframes rotateCover {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+#track-cover.rotating {
+    animation: rotateCover 10s linear infinite;
+    transform-origin: center;
+}
+
+#track-cover.reset {
+    animation: none;
+    transform: rotate(0deg);
+    transition: transform 0.6s ease;
 }

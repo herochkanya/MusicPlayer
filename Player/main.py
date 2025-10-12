@@ -11,6 +11,7 @@ from PySide6.QtGui import QIcon
 from core.downloader import download_audio
 from core.player_logic import MusicPlayer
 from config import get_music_base_dir
+from core.global_hotkeys import GlobalHotkeys
 
 # === Перезапуск у X11 замість Wayland (для Linux) ===
 def restart_without_wayland():
@@ -63,12 +64,16 @@ class Worker(QRunnable):
 class Backend(QObject):
     log_signal = Signal(str)
     track_changed = Signal(dict)
+    playback_state_changed = Signal(bool)
 
     def __init__(self):
         super().__init__()
         self.thread_pool = QThreadPool.globalInstance()
         self.player = MusicPlayer()
         self.player.set_track_change_callback(lambda track: self.track_changed.emit(track))
+        self.player.set_state_callback(lambda is_playing: self.playback_state_changed.emit(is_playing))
+        self.hotkeys = GlobalHotkeys(self.player)
+        self.hotkeys.start()
 
     @Slot(result='QStringList')
     def get_folders(self):
@@ -192,6 +197,10 @@ class Backend(QObject):
         except Exception as e:
             self.log_signal.emit(f"❌ set_global_playlist error: {e}")
             return []
+    
+    @Slot(list, result='QVariantList')
+    def create_temp_playlist(self, playlist_names):
+        return self.player.set_custom_playlist(playlist_names)
 
     @Slot()
     def close_app(self):

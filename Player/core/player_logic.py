@@ -89,7 +89,7 @@ class MusicPlayer:
         self._cycle_mode = 0  # 0=off, 1=all, 2=one
         self._shuffle_mode = False
         self._original_playlist: List[str] = []
-    
+        self.state_callback = None    
     
 
     # ---------- Utility ----------
@@ -165,34 +165,52 @@ class MusicPlayer:
             return [TrackInfo(path).as_dict() for path in self.playlist]
 
     def set_playlist_from_folder(self, folder: str) -> List[Dict]:
-        """
-        Заповнити internal playlist файлами з теки (sorted).
-        Повертає список dict (TrackInfo) — зручно для UI.
-        Не починає відтворення, просто встановлює playlist.
-        """
-        with self._lock:
-            target_dir = os.path.join(self.base_dir, folder)
-            try:
-                items = sorted([
-                    os.path.join(target_dir, f)
-                    for f in os.listdir(target_dir)
-                    if f.lower().endswith('.mp3')
-                ])
-            except Exception:
-                items = []
+        playlist_name = folder
+        if getattr(self, "set_playlist_mode", False):
+            # ===== Режим Set Playlist =====
+            if not hasattr(self, "selected_playlists_for_set"):
+                self.selected_playlists_for_set = []
 
-            self.playlist = items
-            # Якщо зараз грає якийсь трек — оновити current_index, інакше -1
-            if self.current_track and self.current_track.path in self.playlist:
-                self.current_index = self.playlist.index(self.current_track.path)
+            if playlist_name in self.selected_playlists_for_set:
+                # повторне натискання → прибрати з вибраних
+                self.selected_playlists_for_set.remove(playlist_name)
+                self.update_playlist_highlight(playlist_name, False)
             else:
-                self.current_index = -1
+                # додати до вибраних
+                self.selected_playlists_for_set.append(playlist_name)
+                self.update_playlist_highlight(playlist_name, True)
 
-            return [TrackInfo(p).as_dict() for p in self.playlist]
+            # все одно показуємо вміст плейлісту (старе розгортання)
+            self.show_playlist_tracks(playlist_name)
+
+        else:
+            with self._lock:
+                target_dir = os.path.join(self.base_dir, folder)
+                try:
+                    items = sorted([
+                        os.path.join(target_dir, f)
+                        for f in os.listdir(target_dir)
+                        if f.lower().endswith('.mp3')
+                    ])
+                except Exception:
+                    items = []
+
+                self.playlist = items
+                # Якщо зараз грає якийсь трек — оновити current_index, інакше -1
+                if self.current_track and self.current_track.path in self.playlist:
+                    self.current_index = self.playlist.index(self.current_track.path)
+                else:
+                    self.current_index = -1
+
+                return [TrackInfo(p).as_dict() for p in self.playlist]
 
     # ---------- Core control ----------
-    def play_track(self, path: Optional[str] = None, index: Optional[int] = None) -> Optional[Dict]:
+    def play_track(self, path: Optional[str] = None, index: Optional[int] = None, playlist: Optional[List[str]] = None) -> Optional[Dict]:
         with self._lock:
+            if playlist is not None:
+                self.playlist = playlist
+                self.current_index = 0
+                path = self.playlist[0]
             # Визначаємо шлях
             if index is not None:
                 if 0 <= index < len(self.playlist):
@@ -203,7 +221,8 @@ class MusicPlayer:
             elif path:
                 # 🟢 ВИПРАВЛЕНО: не перебудовуємо playlist, якщо shuffle активний
                 if not self._shuffle_mode:
-                    self.playlist = self._build_playlist_for_path(path)
+                    if path not in self.playlist:
+                        self.playlist = self._build_playlist_for_path(path)
                 else:
                     # Якщо shuffle активний, але трек не входить у список — додаємо його
                     if path not in self.playlist:
@@ -252,10 +271,14 @@ class MusicPlayer:
                 self.player.play()
                 self.is_paused = False
                 self.is_playing = True
+                if self.state_callback:
+                    self.state_callback(True)
             else:
                 self.player.pause()
                 self.is_paused = True
                 self.is_playing = False
+                if self.state_callback:
+                    self.state_callback(False)
 
     def stop(self):
         with self._lock:
@@ -391,3 +414,23 @@ class MusicPlayer:
     def set_cycle_mode(self, mode: int):
         with self._lock:
             self._cycle_mode = mode
+    
+    def set_state_callback(self, callback):
+        self.state_callback = callback
+
+    def set_custom_playlist(self, selected_playlists: List[str]) -> List[Dict]:
+        """Повертає плоский список треків у глобальному порядку лише для вибраних папок."""
+        with self._lock:
+            combined_tracks = []
+            # Проходимо як у глобалі, по всіх підпапках бази
+            for root, _, files in os.walk(self.base_dir):
+                # Беремо тільки ті підпапки, що вибрані
+                folder_name = os.path.basename(root)
+                if folder_name not in selected_playlists:
+                    continue
+                for f in sorted(files):
+                    if f.lower().endswith('.mp3'):
+                        combined_tracks.append(os.path.join(root, f))
+            self.playlist = combined_tracks
+            self.current_index = 0
+            return [TrackInfo(p).as_dict() for p in combined_tracks]

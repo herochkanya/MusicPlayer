@@ -29,11 +29,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('text-input');
 
     const globalBtn = document.getElementById('open-global-btn');
+    const setPlaylistBtn = document.getElementById('open-set-btn');
+
+    const themeBtn = document.getElementById('theme-btn');
 
     let backend;
     let currentTrackPath = null;
     let isPlaying = false;
     let playerOriginalHeight = null;
+    let setMode = false;
+    let selectedPlaylists = new Set();
+    const themes = ['green', 'dark', 'light'];
+    let currentThemeIndex = 0;
 
     openDownloaderBtn.addEventListener('click', () => showScreen('downloader-screen'));
     openPlayerBtn.addEventListener('click', () => showScreen('player-screen'));
@@ -59,37 +66,74 @@ document.addEventListener('DOMContentLoaded', () => {
             debugLog.scrollTop = debugLog.scrollHeight;
         });
 
-        // build folder list; clicking a folder will set internal playlist (not just read disk)
         backend.get_folders().then(folders => {
             folderSelect.innerHTML = '';
             folders.forEach(folder => {
                 const div = document.createElement('div');
+                div.classList.add('playlist-item');
+                div.dataset.name = folder;
                 div.textContent = folder;
-                div.addEventListener('click', () => {
-                    Array.from(folderSelect.children).forEach(child => child.classList.remove('selected'));
-                    div.classList.add('selected');
 
-                    // встановлюємо playlist у backend і отримуємо playlist як список dict
-                    backend.set_playlist(folder).then(tracks => {
-                        populateTracks(tracks);
-                    });
+                div.addEventListener('click', (e) => {
+                    if (setMode) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (selectedPlaylists.has(folder)) {
+                            selectedPlaylists.delete(folder);
+                            div.classList.remove('selected-set');
+                        } else {
+                            selectedPlaylists.add(folder);
+                            div.classList.add('selected-set');
+                        }
+                        // показуємо вміст плейлісту, як старе розгортання
+                        backend.set_playlist(folder).then(tracks => {
+                            populateTracks(tracks);
+                        });
+                    } else {
+                        // Стара поведінка: виділяємо тільки один
+                        Array.from(folderSelect.children).forEach(child => child.classList.remove('selected'));
+                        div.classList.add('selected');
 
-                    folderInput.value = folder;
+                        backend.set_playlist(folder).then(tracks => {
+                            populateTracks(tracks);
+                        });
+
+                        folderInput.value = folder;
+                    }
                 });
+
                 folderSelect.appendChild(div);
             });
         });
 
-        // коли бекенд каже що трек змінився — оновлюємо інфо та підсвічуємо у списку
         backend.track_changed.connect(track => {
             if (track) {
                 updateTrackInfo(track);
                 markPlaying(track.path);
             }
+
+            if (isPlaying) {
+                trackCover.classList.add('rotating');
+                trackCover.classList.remove('reset');
+            } else {
+                trackCover.classList.remove('rotating');
+                trackCover.classList.add('reset');
+            }
+        });
+
+        backend.playback_state_changed.connect((isPlaying) => {
+            playBtn.textContent = isPlaying ? '⏸' : '▶';
+
+            if (isPlaying) {
+                trackCover.classList.add('rotating');
+                trackCover.classList.remove('reset');
+            } else {
+                trackCover.classList.remove('rotating');
+                trackCover.classList.add('reset');
+            }
         });
     });
 
-    // ==== Populate ====
     function populateFolders(folders) {
         foldersList.innerHTML = '';
         folders.forEach(folder => {
@@ -109,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tracks.forEach(track => {
             const div = document.createElement('div');
             div.classList.add('track-item');
-            div.dataset.path = track.path; // зручно для пошуку
+            div.dataset.path = track.path;
             const cover = track.cover_path 
                 ? `<img src="${track.cover_path.startsWith('file://') ? track.cover_path : 'file://' + track.cover_path}" 
                         style="width:3rem;height:3rem;margin-right:0.5rem;border-radius:0.5rem;vertical-align:middle;">` 
@@ -125,20 +169,27 @@ document.addEventListener('DOMContentLoaded', () => {
                         playBtn.textContent = '⏸';
                         markPlaying(track.path);
                     }
+
+                    if (isPlaying) {
+                        trackCover.classList.add('rotating');
+                        trackCover.classList.remove('reset');
+                    } else {
+                        trackCover.classList.remove('rotating');
+                        trackCover.classList.add('reset');
+                    }
                 });
             });
             trackList.appendChild(div);
         });
 
-        // після (ре)побудови списку — підсвітити поточний, якщо він відомий
         if (currentTrackPath) markPlaying(currentTrackPath);
     }
 
     function updateTrackInfo(track) {
+        trackCover.classList.remove('rotating', 'reset');
+        trackCover.style.transform = 'rotate(0deg)';
         trackTitle.textContent = track.title || '—';
         trackArtist.textContent = track.artist || '—';
-
-        // Додатковий ефект для плавної зміни обкладинки
         trackCover.classList.add('change');
         setTimeout(() => {
             trackCover.src = track.cover_path 
@@ -148,7 +199,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 300);
     }
 
-    // Підсвічування треку та пульсація
     function markPlaying(path) {
         Array.from(trackList.children).forEach(div => div.classList.remove('playing'));
         if (!path) return;
@@ -161,7 +211,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function toggleDownloader(show) {
         if (show) {
-            // зберегти початковий розмір плеєра
             if (!playerOriginalHeight)
                 playerOriginalHeight = playerScreen.offsetHeight;
 
@@ -187,16 +236,14 @@ document.addEventListener('DOMContentLoaded', () => {
     openDownloaderBtn.addEventListener('click', () => toggleDownloader(true));
     openPlayerBtn.addEventListener('click', () => toggleDownloader(false));
 
-    // ==== Download ====
     startDownloadBtn.addEventListener('click', () => {
         const url = urlInput.value.trim();
         const folder = folderInput.value.trim() || 'downloads';
-        if (!url) return alert('Введіть URL!');
-        debugLog.textContent += `Запуск завантаження...\n`;
+        if (!url) return debugLog.textContent += 'Please enter a URL!\n';
+        debugLog.textContent += `Download started... \nIt'll take a couple of minutes.\n`;
         backend.start_download(url, folder);
     });
 
-    // ==== Playback ====
     playBtn.addEventListener('click', () => {
         if (!currentTrackPath) return;
         backend.toggle_pause();
@@ -204,7 +251,6 @@ document.addEventListener('DOMContentLoaded', () => {
         playBtn.textContent = isPlaying ? '⏸' : '▶';
     });
 
-    // ==== Next / Prev ====
     backBtn.addEventListener('click', () => {
         backend.prev_track().then(track => {
             if (track && track.path) {
@@ -213,6 +259,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 isPlaying = true;
                 playBtn.textContent = '⏸';
                 markPlaying(track.path);
+            }
+
+            if (isPlaying) {
+                trackCover.classList.add('rotating');
+                trackCover.classList.remove('reset');
+            } else {
+                trackCover.classList.remove('rotating');
+                trackCover.classList.add('reset');
             }
         });
     });
@@ -226,10 +280,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 playBtn.textContent = '⏸';
                 markPlaying(track.path);
             }
+
+            if (isPlaying) {
+                trackCover.classList.add('rotating');
+                trackCover.classList.remove('reset');
+            } else {
+                trackCover.classList.remove('rotating');
+                trackCover.classList.add('reset');
+            }
         });
     });
 
-    // ==== Progress ====
     setInterval(() => {
         if (!backend || !currentTrackPath) return;
         backend.get_playback_info().then(info => {
@@ -255,58 +316,88 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
     }
 
-    // ===== Cycle button =====
-    let cycleMode = 0; // 0 = off, 1 = all, 2 = one
+    let cycleMode = 0;
     cycleBtn.addEventListener('click', () => {
         cycleMode = (cycleMode + 1) % 3;
         switch (cycleMode) {
             case 0:
-                cycleBtn.textContent = '🗘';
+                cycleBtn.textContent = '→';
                 backend.set_cycle_mode(0);
                 break;
             case 1:
-                cycleBtn.textContent = '🔁';
+                cycleBtn.textContent = '⇄';
                 backend.set_cycle_mode(1);
                 break;
             case 2:
-                cycleBtn.textContent = '🔂';
+                cycleBtn.textContent = '⥁';
                 backend.set_cycle_mode(2);
                 break;
         }
     });
 
-    // ===== Shuffle / Random =====
     randomBtn.addEventListener('click', () => {
-        // toggle_shuffle повертає bool (on/off)
         backend.toggle_shuffle().then(shuffle_on => {
-            // після зміни shuffle — отримуємо поточний internal playlist і перебудовуємо UI
             backend.get_playlist().then(tracks => {
                 populateTracks(tracks);
-                // якщо shuffle включився, змінюємо текст і підсвічуємо
                 randomBtn.textContent = shuffle_on ? '🔀' : '🎵';
             });
         });
     });
 
-    // === Live search ===
     searchInput.addEventListener('input', () => {
         const query = searchInput.value.trim().toLowerCase();
-
         Array.from(trackList.children).forEach(div => {
             const title = div.querySelector('span')?.textContent.toLowerCase() || '';
-            if (title.includes(query)) {
-                div.style.display = ''; // показати
-            } else {
-                div.style.display = 'none'; // сховати
-            }
+            div.style.display = title.includes(query) ? '' : 'none';
         });
     });
 
     globalBtn.addEventListener('click', () => {
         Array.from(folderSelect.children).forEach(child => child.classList.remove('selected'));
         globalBtn.classList.add('selected');
-        backend.set_global_playlist().then(tracks => {
-            populateTracks(tracks);
-        });
+        backend.set_global_playlist().then(tracks => populateTracks(tracks));
+    });
+
+    // ==== SET PLAYLIST MODE ====
+    setPlaylistBtn.addEventListener('click', () => {
+        if (setMode) {
+            // вихід з режиму вибору
+            setMode = false;
+            setPlaylistBtn.classList.remove('active');
+
+            const selected = Array.from(selectedPlaylists);
+            selectedPlaylists.clear();
+
+            if (selected.length > 0) {
+                // створюємо тимчасовий плейліст на бекенді
+                backend.create_temp_playlist(selected).then(tracks => {
+                    // оновлюємо UI списком тимчасового плейліста
+                    populateTracks(tracks);
+                });
+            }
+
+            // прибираємо виділення на папках
+            document.querySelectorAll('.playlist-item.selected-set')
+                .forEach(el => el.classList.remove('selected-set'));
+
+        } else {
+            // вхід у режим вибору
+            setMode = true;
+            setPlaylistBtn.classList.add('active');
+            selectedPlaylists.clear();
+        }
+    });
+
+   themeBtn.addEventListener('click', () => {
+        currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+        // Застосовуємо тему до кореневого елемента :root
+        document.documentElement.setAttribute('data-theme', themes[currentThemeIndex]);
+
+        // змінюємо іконку на кнопці відповідно до теми
+        switch(themes[currentThemeIndex]){
+            case 'green': themeBtn.textContent = '☘️'; break;
+            case 'dark': themeBtn.textContent = '🌙'; break;
+            case 'light': themeBtn.textContent = '☀️'; break;
+        }
     });
 });

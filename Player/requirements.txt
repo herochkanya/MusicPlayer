@@ -3,3 +3,5 @@ yt-dlp
 mutagen
 requests
 python-vlc
+keyboard
+pynput
