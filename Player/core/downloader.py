@@ -52,39 +52,65 @@ def find_ffmpeg_path() -> str | None:
         return None
 
 
-def download_audio(url: str, target_folder: str = None) -> dict | list | None:
-    """
-    Downloads audio from YouTube/SoundCloud into a given folder.
-    Automatically uses local ffmpeg binaries if present.
-    """
+def download_audio(url: str, target_folder: str = None, cookies_path: str = None) -> dict | list | None:
     download_dir = get_download_path(target_folder if target_folder else 'downloads')
     os.makedirs(download_dir, exist_ok=True)
 
     ffmpeg_location = find_ffmpeg_path()
 
     ydl_opts = {
-        'format': 'bestaudio/best',
+        # 🌟 Формат: спробувати HLS/M4A для YT Music, інакше bestaudio
+        'format': 'bestaudio[ext=m4a]/bestaudio',
+        
+        # 🌟 Шлях для завантаження
         'outtmpl': os.path.join(download_dir, '%(title)s.%(ext)s'),
+        
+        # 🌟 Звичайні параметри виводу
         'quiet': True,
         'no_warnings': True,
-        'noplaylist': False,
-        'retries': 10,                  # кількість повторів при обриві
-        'continuedl': True,             # дозвіл на дозавантаження
-        'ratelimit': 1024*1024,         # ліміт швидкості (1 MB/s) — щоб не відрубало
-        'socket_timeout': 30,           # таймаут сокету
         'verbose': False,
-        'fragment_retries': 10,         # для потокових фрагментів
+        
+        # 🌟 Плейлисти
+        'noplaylist': False,
+        
+        # 🌟 Повтор при обриві
+        'retries': 10,
+        'continuedl': True,
+        'fragment_retries': 10,
+        
+        # 🌟 Ліміти
+        'ratelimit': 1024*1024,
+        'socket_timeout': 30,
+        
+        # 🌟 FFmpeg постпроцесинг
+        'prefer_ffmpeg': True,
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
             'preferredquality': '192',
         }],
         'postprocessor_args': ['-ar', '44100'],
-        'prefer_ffmpeg': True,
+
+        # 🌟 Геоблоки
+        'geo_bypass': True,
+        'geo_bypass_country': 'US',
+        
+        # 🌟 Проксі (можна залишити None)
+        'proxy': None,
+        
+        # 🌟 Примусовий URL
+        'forceurl': False,
+        
+        # 🌟 Cookies (для YT Music)
+        'cookiefile': cookies_path if cookies_path and os.path.exists(cookies_path) else None,
     }
 
     if ffmpeg_location:
         ydl_opts['ffmpeg_location'] = ffmpeg_location
+
+    # 🌟 Додаємо cookies, якщо передані
+    if cookies_path and os.path.exists(cookies_path):
+        ydl_opts['cookiefile'] = cookies_path
 
     try:
         with YoutubeDL(ydl_opts) as ydl:

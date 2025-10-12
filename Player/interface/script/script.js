@@ -59,6 +59,14 @@ document.addEventListener('DOMContentLoaded', () => {
     new QWebChannel(qt.webChannelTransport, function(channel) {
         backend = channel.objects.backend;
 
+        backend.get_theme().then(theme => {
+            applyTheme(theme);
+        });
+
+        backend.theme_changed.connect(theme => {
+            applyTheme(theme);
+        });
+
         backend.get_folders().then(folders => populateFolders(folders));
 
         backend.log_signal.connect(msg => {
@@ -388,16 +396,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-   themeBtn.addEventListener('click', () => {
-        currentThemeIndex = (currentThemeIndex + 1) % themes.length;
-        // Застосовуємо тему до кореневого елемента :root
-        document.documentElement.setAttribute('data-theme', themes[currentThemeIndex]);
-
-        // змінюємо іконку на кнопці відповідно до теми
-        switch(themes[currentThemeIndex]){
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        switch (theme) {
             case 'green': themeBtn.textContent = '☘️'; break;
             case 'dark': themeBtn.textContent = '🌙'; break;
             case 'light': themeBtn.textContent = '☀️'; break;
         }
+    }
+
+    // при кліку:
+    themeBtn.addEventListener('click', () => {
+        currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+        const newTheme = themes[currentThemeIndex];
+        applyTheme(newTheme);
+        backend.set_theme(newTheme);  // 🔹 повідомляємо Python
     });
 });

@@ -12,6 +12,7 @@ from core.downloader import download_audio
 from core.player_logic import MusicPlayer
 from config import get_music_base_dir
 from core.global_hotkeys import GlobalHotkeys
+from core.database import get_theme, set_theme
 
 # === Перезапуск у X11 замість Wayland (для Linux) ===
 def restart_without_wayland():
@@ -65,6 +66,7 @@ class Backend(QObject):
     log_signal = Signal(str)
     track_changed = Signal(dict)
     playback_state_changed = Signal(bool)
+    theme_changed = Signal(str)
 
     def __init__(self):
         super().__init__()
@@ -74,6 +76,7 @@ class Backend(QObject):
         self.player.set_state_callback(lambda is_playing: self.playback_state_changed.emit(is_playing))
         self.hotkeys = GlobalHotkeys(self.player)
         self.hotkeys.start()
+        self.current_theme = get_theme()
 
     @Slot(result='QStringList')
     def get_folders(self):
@@ -201,6 +204,23 @@ class Backend(QObject):
     @Slot(list, result='QVariantList')
     def create_temp_playlist(self, playlist_names):
         return self.player.set_custom_playlist(playlist_names)
+    
+    @Slot(result=str)
+    def get_theme(self):
+        """Повертає поточну тему (для JS)."""
+        return self.current_theme
+
+    @Slot(str)
+    def set_theme(self, theme_name):
+        """Оновлює тему і зберігає її в settings.json."""
+        try:
+            self.current_theme = theme_name
+            set_theme(theme_name)
+            self.theme_changed.emit(theme_name)
+            self.log_signal.emit(f"🎨 Theme set to: {theme_name}")
+        except Exception as e:
+            self.log_signal.emit(f"❌ set_theme error: {e}")
+
 
     @Slot()
     def close_app(self):
