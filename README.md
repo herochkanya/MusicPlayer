@@ -18,11 +18,11 @@
 
 ### Player Screen
 
-<img width="920" height="591" alt="MusicPlayer_mo4Vx3cpJK" src="https://github.com/user-attachments/assets/3444aa04-cf9f-4ea3-9b33-09bb34853797" />
+![MyCollages](https://github.com/user-attachments/assets/ab24fc03-ecc5-4421-a7a7-0603e836c9b8)
 
 ### Downloader Screen
 
-<img width="920" height="591" alt="MusicPlayer_oinIVXZkfT" src="https://github.com/user-attachments/assets/956e4a45-41f4-4764-a352-d164e158b0b3" />
+<img width="1920" height="991" alt="python3 11_ohIFMNLf6b" src="https://github.com/user-attachments/assets/29c719e7-5aa0-4885-be5f-c72648105934" />
 
 ## ⚡ Installation
 
@@ -80,7 +80,7 @@ Player/
 * [x] Global playlist aggregation
 * [x] Updated glassmorphism UI
 * [ ] Add equalizer support
-* [ ] Dark/Light theme toggle
+* [x] Dark/Light theme toggle
 * [ ] Mobile-friendly layout
 
 ## 💡 Notes
