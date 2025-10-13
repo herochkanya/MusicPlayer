@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Music Player</title>
+    <link rel="stylesheet" href="style/style.css" />
+</head>
+<header id="drag-bar">
+    <div class="head">
+        <button id="open-downloader-btn" class="emoji-button" style="width: 10vh; margin-right: 2vw;">⭳</button>
+        <button id="open-player-btn" class="emoji-button" style="width: 10vh;">🎵</button>
+        <input type="text" id="text-input" placeholder="Song name" style="margin-left: 2vw;"/>
+        <button id="theme-btn" class="emoji-button" style="width: 10vh; margin-left: 2vw;">☘️</button>
+    </div>
+</header>
+<body>
+    <div id="downloader-screen" class="screen" style="flex-direction: column; max-width: 23vw;
+    margin-left: 5vw; margin-right: -4vw;">
+        <input type="text" id="url-input" placeholder="Input URL" />
+        <input type="text" id="folder-input" placeholder="Folder (for example: downloads)" />
+        <div id="folders-list" class="scroll-list"></div>
+        <button id="start-download-btn">Download</button>
+        <pre id="debug-log" class="debug-log"></pre>
+    </div>
+
+    <div id="player-screen" class="screen" style="flex-direction: row; background: none;
+    border: none; border-radius: none; backdrop-filter: none; box-shadow: none">
+        <div style="display: flex; flex-direction: row; background: var(--glass-color);
+        border: 1px solid var(--border-glass); border-radius: 1.5rem;
+        backdrop-filter: blur(var(--background-blur)); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);">
+            <div style="display: flex; flex-direction: column; margin: 2vw; margin-left: 3vw;
+            margin-right: 1vw;">
+                <div style="display: flex; flex-direction: row; height: 10%; width: 22vw;
+                margin-bottom: 1vh;
+                justify-content: center; align-items: center;">
+                    <button id="open-set-btn", style="width: auto; height: 100%; margin-right: 5%;">Set Playlist</button>
+                    <button id="open-global-btn", style="width: auto; height: 100%;">Global Playlist</button>
+                </div>
+                <div id="folder-select" class="scroll-list" style="width: 20vw; margin: 1vw;"></div>
+            </div>
+            <div id="track-list" class="scroll-list" style="width: 20vw; margin: 2vw;"></div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; margin: 10vh; margin-right: auto; 
+        margin-bottom: 15vh; justify-content: center; align-items: center; max-height: 80vh;">
+            <div id="now-playing">
+                <img id="track-cover" src="" style="max-width: 40vh; max-height: 40vh; 
+                min-width: 40vh; min-height: 40vh; object-fit: cover;
+                border-radius: 10rem; box-shadow: 0 0 20px rgba(0,0,0,0.5);" />
+                <p style="margin: 1vh;"></p>
+                <b id="track-title" style="font-size: 1.5rem;">Chose</b>
+                <p style="margin: 1vh;"></p>
+                <i id="track-artist" style="font-size: 1rem; margin: 0px;">Your track</i>
+                <p style="margin: 1vh;"></p>
+            </div>
+
+            <input type="range" id="progress-bar" min="0" max="100" value="40" class="track-slider">
+
+            <div class="time-display">
+                <span id="current-time" style="margin-right: 18vw;">0:00</span>
+                <span id="total-time">0:00</span>
+            </div>
+
+            <div class="controls">
+                <button id="back-btn" class="emoji-button" style="width: 3rem; height: 3rem;">⦉</button>
+                <button id="playpause-btn" class="emoji-button" style="border-radius: 50%; height: 3.2rem;
+                width: 3.2rem;">▶</button>
+                <button id="next-btn" class="emoji-button" style="width: 3rem; height: 3rem;">⦊</button>
+            </div>
+
+            <div class="controls">
+                <button id="cycle-btn" class="emoji-button" style="font-weight: normal; font-size: 1.6rem; 
+                width: 2.6rem; height: 2.6rem;">→</button>
+                <button id="random-btn" class="emoji-button" style="height: 2.6rem; width: 2.6rem;
+                font-size: 1.6rem;">🎵</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script/qwebchannel.js"></script>
+    <script src="script/script.js"></script>
+</body>
+</html>
