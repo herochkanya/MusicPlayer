@@ -74,6 +74,7 @@ Player/
 └─ requirements.txt
 └─ MusicPlayerWin.spec
 └─ MusicPlayerLin.spec
+└─ .gitignore
 ```
 
 ## 🌍 Roadmap
