@@ -73,7 +73,6 @@ Player/
 ├─ main.py         # main entry point
 └─ requirements.txt
 └─ MusicPlayerWin.spec
-└─ MusicPlayerLin.spec
 └─ .gitignore
 ```
 
@@ -89,7 +88,7 @@ Player/
 ## 💡 Notes
 
 * Currently in **BETA**, expect occasional bugs.
-* Works best on **Windows** and **Linux** with Python 3.10+.
+* Works best on **Windows** with Python 3.10+.
 * Feedback and contributions are welcome! 🚀
 
 ## 📫 Contact & Contribution
