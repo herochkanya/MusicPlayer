@@ -72,6 +72,8 @@ Player/
 ├─ config.py       # config
 ├─ main.py         # main entry point
 └─ requirements.txt
+└─ MusicPlayerWin.spec
+└─ MusicPlayerLin.spec
 ```
 
 ## 🌍 Roadmap
