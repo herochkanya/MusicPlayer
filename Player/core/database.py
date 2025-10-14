@@ -2,9 +2,7 @@
 
 # Core database module for the Music Player
 
-import os
-import json
-import sys
+import os, json, sys
 
 # Path helpers
 def get_project_root():
@@ -47,3 +45,4 @@ def set_theme(theme_name: str):
     settings = load_settings()
     settings["theme"] = theme_name
     save_settings(settings)
+
