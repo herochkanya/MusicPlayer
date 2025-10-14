@@ -41,7 +41,7 @@ pip install -r requirements.txt
 
 ### Install FFmpeg
 
-* Download FFmpeg — [ffmpeg-8.0-essentials_build](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip)
+* Download FFmpeg — [ffmpeg-8.0-essentials_build.zip](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip)
 * Unzip the archive
 * Open the 'bin' folder inside the unzipped directory
 * Copy 'ffmpeg.exe' and 'ffprobe.exe'
@@ -52,7 +52,7 @@ pip install -r requirements.txt
 * Download vlc — [vlc-3.0.21-win64.exe](https://get.videolan.org/vlc/3.0.21/win64/vlc-3.0.21-win64.exe)
 * Optional: open the \Program Files\VideoLAN\VLC
 * Optional: copy 'vlc.exe', 'libvlc.dll', 'libvlccore.dll', 'plugins/'
-* Optional: paste into your Player/bin/vlc folder
+* Optional: paste into your Player/bin/vlc/ folder
 
 ### Run the player
 
