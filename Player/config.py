@@ -2,8 +2,7 @@
 
 # Configuration file for the Music Player application
 
-import os
-import sys
+import os, sys
 
 # Function to get the base music directory based on the OS
 def get_music_base_dir():
