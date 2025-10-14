@@ -6,12 +6,22 @@
 
 import sys
 from PyInstaller.utils.hooks import collect_data_files
-from PyInstaller.building.build_main import Analysis
+from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT
 
 datas = [
     ('interface', 'interface'),  # HTML/JS/CSS
-    ('bin', 'bin'),              # resources
+    ('bin', 'bin'),              # resources (icons, etc.)
 ]
+
+binaries = [
+    ('bin/vlc/libvlc.dll', 'bin/vlc'),
+    ('bin/vlc/libvlccore.dll', 'bin/vlc'),
+]
+
+import os
+vlc_plugins_path = os.path.join('bin', 'vlc', 'plugins')
+if os.path.exists(vlc_plugins_path):
+    binaries.append((vlc_plugins_path, 'bin/vlc/plugins'))
 
 # Python
 datas += collect_data_files('core')
@@ -19,7 +29,7 @@ datas += collect_data_files('core')
 a = Analysis(
     ['main.py'],
     pathex=[],
-    binaries=[],
+    binaries=binaries,
     datas=datas,
     hiddenimports=[],
     hookspath=[],
