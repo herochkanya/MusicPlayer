@@ -9,6 +9,23 @@ from mutagen.id3 import ID3, APIC
 from typing import Optional, Callable, List, Dict
 from config import get_music_base_dir
 
+# === VLC auto-detect ===
+def init_vlc_path():
+    local_vlc_dir = os.path.join(os.path.dirname(__file__), "bin", "vlc")
+
+    libvlc = os.path.join(local_vlc_dir, "libvlc.dll")
+    core = os.path.join(local_vlc_dir, "libvlccore.dll")
+
+    if os.path.exists(libvlc) and os.path.exists(core):
+        os.environ["PATH"] = local_vlc_dir + os.pathsep + os.environ.get("PATH", "")
+        os.environ["PYTHON_VLC_MODULE_PATH"] = local_vlc_dir
+        os.environ["VLC_PLUGIN_PATH"] = os.path.join(local_vlc_dir, "plugins")
+        print(f"🎵 Using bundled VLC from: {local_vlc_dir}")
+    else:
+        print("🎧 Using system-installed VLC (if available).")
+
+init_vlc_path()
+
 # ---------- TrackInfo ----------
 # Helper class to read metadata from an MP3 file
 class TrackInfo:
