@@ -3,10 +3,7 @@
 # Main application file for the Music Player
 # There are @Slot and @Signal decorators for JS interaction
 
-import sys
-import os
-import platform
-import subprocess
+import sys, os, platform, subprocess
 from PySide6.QtCore import QObject, Signal, Slot, QUrl, QRunnable, QThreadPool
 from PySide6.QtWidgets import QApplication
 from PySide6.QtWebEngineWidgets import QWebEngineView
