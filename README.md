@@ -47,6 +47,13 @@ pip install -r requirements.txt
 * Copy 'ffmpeg.exe' and 'ffprobe.exe'
 * Paste both files into your Player/bin/ folder
 
+### Install vlc
+
+* Download vlc — [vlc-3.0.21-win64.exe](https://get.videolan.org/vlc/3.0.21/win64/vlc-3.0.21-win64.exe)
+* Optional: open the \Program Files\VideoLAN\VLC
+* Optional: copy 'vlc.exe', 'libvlc.dll', 'libvlccore.dll', 'plugins/'
+* Optional: paste into your Player/bin/vlc folder
+
 ### Run the player
 
 ```
@@ -71,8 +78,8 @@ Player/
 ├─ interface/      # HTML/CSS/JS UI files
 ├─ config.py       # config
 ├─ main.py         # main entry point
-└─ requirements.txt
-└─ MusicPlayerWin.spec
+├─ requirements.txt
+├─ MusicPlayerWin.spec
 └─ .gitignore
 ```
 
