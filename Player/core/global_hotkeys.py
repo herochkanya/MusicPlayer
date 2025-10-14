@@ -2,8 +2,7 @@
 
 # Core module for global hotkeys using pynput
 
-import threading
-import platform
+import threading, platform
 from pynput import keyboard
 
 class GlobalHotkeys:
@@ -57,3 +56,4 @@ class GlobalHotkeys:
     # Helper to check if Ctrl is pressed
     def _ctrl_pressed(self):
         return keyboard.Key.ctrl in self._pressed_keys or keyboard.Key.ctrl_l in self._pressed_keys or keyboard.Key.ctrl_r in self._pressed_keys
+
