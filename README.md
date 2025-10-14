@@ -29,7 +29,7 @@
 ### Requirements
 
 * Python 3.10+
-* PyQt5 / PySide6
+* PyQt6 / PySide6
 * yt-dlp
 * ffpyplayer / VLC backend
 
