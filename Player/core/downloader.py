@@ -5,9 +5,7 @@
 from yt_dlp import YoutubeDL
 from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, APIC, error, TIT2, TPE1, TALB
-import requests
-import os
-import re
+import requests, os, re
 
 from config import get_download_path
 
