@@ -88,6 +88,8 @@ Player/
 * [ ] Add equalizer support
 * [x] Dark/Light theme toggle
 * [ ] Mobile-friendly layout
+* [x] Fastkeys like 'Cntrl + (Space/Left/RIght)'
+* [x] Fastkeys from Bluetooth devices 
 
 ## 💡 Notes
 
