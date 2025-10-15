@@ -50,9 +50,6 @@ pip install -r requirements.txt
 ### Install vlc
 
 * Download vlc — [vlc-3.0.21-win64.exe](https://get.videolan.org/vlc/3.0.21/win64/vlc-3.0.21-win64.exe)
-* Optional: open the \Program Files\VideoLAN\VLC
-* Optional: copy 'vlc.exe', 'libvlc.dll', 'libvlccore.dll', 'plugins/'
-* Optional: paste into your Player/bin/vlc/ folder
 
 ### Run the player
 
