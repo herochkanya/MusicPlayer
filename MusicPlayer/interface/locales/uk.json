@@ -1,0 +1,29 @@
+{
+    "settings.account.button": "Аккаунт",
+    "settings.path.button": "Шлях завантажень",
+    "settings.language.button": "Мова",
+    "settings.theme.button": "Тема",
+    
+    "settings.account.title": "Налаштування аккаунта",
+
+    "settings.path.title": "Налаштування шляху завантажень",
+    "settings.path.current": "Поточний шлях:",
+    "settings.path.approve.button": "Новий шлях",
+
+    "settings.language.title": "Налаштування мови",
+    "settings.language.current": "Поточна мова",
+    "settings.language.approve.button": "Застосувати",
+
+    "settings.theme.title": "Налаштування теми",
+
+    "player.global": "Глобальний",
+    "player.set": "Кастом",
+    "player.title": "Оберіть",
+    "player.artist": "Свій трек",
+
+    "downloader.url": "Введіть URL",
+    "downloader.folder": "Папка (наприклад: downloads)",
+    "downloader.start": "Завантажити",
+
+    "head.search": "Назва пісні"
+}

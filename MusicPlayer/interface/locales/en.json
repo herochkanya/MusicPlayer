@@ -1,0 +1,29 @@
+{
+    "settings.account.button": "Account",
+    "settings.path.button": "Download Path",
+    "settings.language.button": "Language",
+    "settings.theme.button": "Theme",
+
+    "settings.account.title": "Account Settings",
+
+    "settings.path.title": "Download Path Settings",
+    "settings.path.current": "Current Download Path:",
+    "settings.path.approve.button": "New Download Path",
+
+    "settings.language.title": "Language Settings",
+    "settings.language.current": "Current Language",
+    "settings.language.approve.button": "Set Language",
+
+    "settings.theme.title": "Theme Settings",
+
+    "player.global": "Global Playlist",
+    "player.set": "Set Playlist",
+    "player.title": "Chose",
+    "player.artist": "Your track",
+
+    "downloader.url": "Input URL",
+    "downloader.folder": "Folder (for example: downloads)",
+    "downloader.start": "Download",
+
+    "head.search": "Song name"
+}
