@@ -1,0 +1,54 @@
+{
+    "settings.path.button": "Збереження",
+    "settings.language.button": "Мова",
+    "settings.theme.button": "Тема",
+    "settings.shortcut.button": "Гарячі клавіші",
+    "settings.equalizer.button": "Еквалайзер",
+
+    "settings.path.title": "Вибір шляху",
+    "settings.path.current": "Поточний:",
+    "settings.path.approve.button": "Новий",
+
+    "settings.language.title": "Вибір мови",
+    "settings.language.current": "Поточна:",
+    "settings.language.approve.button": "Застосувати",
+
+    "settings.theme.title": "Вибір теми",
+    "settings.theme.custom": "✏️ Власна",
+    "settings.theme.grass": "☘️ Конюшина",
+    "settings.theme.sun": "☀️ Сонце",
+    "settings.theme.moon": "🌙 Місяць",
+    "settings.theme.drakula": "🦇 Дракула",
+    "settings.theme.greentea": "🍵 Зелений чай",
+    "settings.theme.dark": "🎱 Темна",
+
+    "settings.animation.screen.enable": "Увімкнути анімації екрану",
+    "settings.animation.cover.enable": "Увімкнути анімації обкладинок",
+    "settings.animation.pulse.enable": "Увімкнути пульсуючі анімації",
+
+    "settings.cover.title": "Вибір стилю обкладинки",
+    "settings.cover.circle": "⭕ Коло",
+    "settings.cover.rounded": "▭ Закруглена",
+    "settings.cover.approve.button": "Застосувати",
+
+    "settings.shortcut.title": "Вибір гарячих клавіш",
+    "settings.shortcut.change": "Змінити",
+    "settings.shortcut.pause": "Пауза / Відтворення",
+    "settings.shortcut.next": "Наступний трек",
+    "settings.shortcut.prev": "Попередній трек",
+
+    "settings.equalizer.title": "Налаштування еквалайзера",
+    "settings.equalizer.note": "Регулюйте повзунки для зміни частот звуку.",
+    "settings.equalizer.reset": "Скинути",
+
+    "player.global": "Медіатека",
+    "player.set": "Групувати",
+    "player.title": "Оберіть",
+    "player.artist": "Свій трек",
+
+    "downloader.url": "Введіть URL",
+    "downloader.folder": "Папка (наприклад: downloads)",
+    "downloader.start": "Завантажити",
+
+    "head.search": "Назва пісні"
+}
