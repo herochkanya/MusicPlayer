@@ -2,7 +2,7 @@
 
 ![Banner](https://github.com/user-attachments/assets/f1db33cf-2e71-4c38-8735-0ec0b21db542)
 
-**[BETA]** — Simple but powerful music player with built-in downloader from **YouTube** and **SoundCloud**. Perfect for offline listening, playlist management, and enjoying your favorite tracks in one place.
+Simple but powerful music player with built-in downloader from **YouTube** and **SoundCloud**. Perfect for offline listening, playlist management, and enjoying your favorite tracks in one place.
 
 ## 🚀 Features
 
@@ -16,13 +16,7 @@
 
 ## 📸 Screenshots
 
-### Player Screen
-
-![MyCollages](https://github.com/user-attachments/assets/ab24fc03-ecc5-4421-a7a7-0603e836c9b8)
-
-### Downloader Screen
-
-<img width="1920" height="991" alt="python3 11_ohIFMNLf6b" src="https://github.com/user-attachments/assets/29c719e7-5aa0-4885-be5f-c72648105934" />
+![MusicPlayer_s8h2j2QYhZ](https://github.com/user-attachments/assets/a11778d2-34f3-4bcf-b97c-10a3ccbbdb43)
 
 ## ⚡ Installation
 
@@ -31,7 +25,7 @@
 * Python 3.10+
 * PyQt6 / PySide6
 * yt-dlp
-* ffpyplayer / VLC backend
+* ffpyplayer
 
 ### Install dependencies
 
@@ -45,11 +39,7 @@ pip install -r requirements.txt
 * Unzip the archive
 * Open the 'bin' folder inside the unzipped directory
 * Copy 'ffmpeg.exe' and 'ffprobe.exe'
-* Paste both files into your Player/bin/ folder
-
-### Install vlc
-
-* Download vlc — [vlc-3.0.21-win64.exe](https://get.videolan.org/vlc/3.0.21/win64/vlc-3.0.21-win64.exe)
+* Paste both files into your MusicPlayer/bin/ folder
 
 ### Run the player
 
@@ -85,7 +75,7 @@ Player/
 * [x] Search bar functionality
 * [x] Global playlist aggregation
 * [x] Updated glassmorphism UI
-* [ ] Add equalizer support
+* [x] Add equalizer support
 * [x] Dark/Light theme toggle
 * [ ] Mobile-friendly layout
 * [x] Fastkeys like 'Cntrl + (Space/Left/RIght)'
