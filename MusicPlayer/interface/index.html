@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Music Player</title>
+    <link rel="stylesheet" href="style/themes_lite.css"/>
+    <link rel="stylesheet" href="style/themes.css" />
+    <link rel="stylesheet" href="style/style.css" />
+</head>
+<header id="drag-bar">
+    <div class="head">
+        <button id="switch-downloader-player-btn" class="emoji-button" 
+        style="margin-right: 2vw;">⭳</button>
+        <input type="text" id="text-input" data-i18n-placeholder="head.search"/>
+        <button id="open-settings-btn" class="emoji-button" style="margin-left: 2vw;">⚙️</button>
+    </div>
+</header>
+<body>
+    <div id="downloader-screen" class="screen downloader-screen">
+        <input type="text" id="url-input" data-i18n-placeholder="downloader.url" />
+        <input type="text" id="folder-input" data-i18n-placeholder="downloader.folder" />
+        <div id="folders-list" class="scroll-list"></div>
+        <button id="start-download-btn" data-i18n="downloader.start"></button>
+        <pre id="debug-log" class="debug-log"></pre>
+    </div>
+
+    <div id="player-screen" class="screen player-screen">
+        <div class="player-screen-content">
+            <div class="player-screen-folder">
+                <div class="player-screen-folder-list">
+                    <button id="open-set-btn", style="width: auto; height: 100%; 
+                    margin-right: 5%;" data-i18n="player.set"></button>
+                    <button id="open-global-btn", style="width: auto; height: 100%;" 
+                    data-i18n="player.global"></button>
+                </div>
+                <div id="folder-select" class="scroll-list" style="width: 20vw; margin: 1vw;"></div>
+            </div>
+            <div id="track-list" class="scroll-list" style="width: 20vw; margin: 2vw;"></div>
+        </div>
+
+        <div class="player-screen-playback">
+            <div id="now-playing">
+                <img id="track-cover" src=""/>
+                <p style="margin: 1vh;"></p>
+                <b id="track-title" style="font-size: 1.5rem;" 
+                data-i18n="player.title"></b>
+                <p style="margin: 1vh;"></p>
+                <i id="track-artist" style="font-size: 1rem; margin: 0px;" 
+                data-i18n="player.artist"></i>
+                <p style="margin: 1vh;"></p>
+            </div>
+
+            <input type="range" id="progress-bar" min="0" max="100" value="40" 
+            class="track-slider">
+
+            <div class="time-display">
+                <span id="current-time" style="margin-right: 18vw;">0:00</span>
+                <span id="total-time">0:00</span>
+            </div>
+
+            <div class="controls">
+                <button id="random-btn" class="emoji-button" style="font-size: 1.3rem; width: 3vw;">⇉</button>
+                <button id="back-btn" class="emoji-button" style="font-size: 1.8rem; width: 3.5vw;">⦉</button>
+                <button id="playpause-btn" class="emoji-button" style="border-radius: 50%; width: 4.5vw;">►</button>
+                <button id="next-btn" class="emoji-button" style="font-size: 1.8rem; width: 3.5vw;">⦊</button>
+                <button id="cycle-btn" class="emoji-button" style="font-size: 1.3rem; width: 3vw;">➜</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="settings-screen" class="screen" style="flex-direction: row;">
+        <div class="scroll-list" style="display: flex; flex-direction: column;
+         margin: 2vw; margin-right: 0px; padding: 1rem;">
+            <button id="path-settings-btn", style="width: auto; max-height: 7vh;" 
+            data-i18n="settings.path.button"></button>
+            <button id="language-settings-btn", style="width: auto; max-height: 5vh;" 
+            data-i18n="settings.language.button"></button>
+            <button id="theme-settings-btn", style="width: auto; max-height: 5vh;" 
+            data-i18n="settings.theme.button"></button>
+            <button id="shortcut-settings-btn", style="width: auto; max-height: 5vh;" 
+            data-i18n="settings.shortcut.button"></button>
+            <button id="shortcut-equalizer-btn", style="width: auto; max-height: 5vh;" 
+            data-i18n="settings.equalizer.button"></button>
+        </div>
+
+        <div id="settings-content-path" class="scroll-list settings-pannel">
+            <h2 style="align-items: center;" data-i18n="settings.path.title"></h2>
+            <div style="flex-direction: row;">
+                <p style="font-size: 1.2rem; margin-bottom: 1vh;" 
+                data-i18n="settings.path.current"></p>
+                <span id="current-download-path"
+                    style="cursor: pointer; text-decoration: underline;">
+                </span>
+            </div>
+            <div style="flex-direction: row; margin-top: 2vh;">
+                <button id="set-download-path-btn" 
+                data-i18n="settings.path.approve.button"></button>
+            </div>
+        </div>
+
+        <div id="settings-content-language" class="scroll-list settings-pannel">
+            <h2 style="align-items: center;" data-i18n="settings.language.title"></h2>
+            <div>
+                <h style="font-size: 1.2rem; margin-bottom: 1vh;" 
+                data-i18n="settings.language.current"></h>
+                <h style="font-size: 1.2rem;" id="current-language"></h>
+            </div>
+            <div style="flex-direction: row; margin-top: 2vh;">
+                <select id="language-select" class="selector">
+                    <option value="en">English</option>
+                    <option value="uk">Українська</option>
+                </select>
+                <button id="set-language-btn" style="width: auto; max-height: 5vh;" 
+                data-i18n="settings.language.approve.button"></button>
+            </div>
+        </div>
+
+        <div id="settings-content-theme" class="scroll-list settings-pannel">
+            <h2 style="align-items: center;" data-i18n="settings.theme.title"></h2>
+            <div class="shortcut-item">
+                <label style="font-weight: bold;" for="lite-toggle" data-i18n="settings.lite.enable"></label>
+                <input type="checkbox" id="lite-toggle"/>
+            </div>
+            <div class="shortcut-item">
+                <label for="screen-animation-toggle" data-i18n="settings.animation.screen.enable"></label>
+                <input type="checkbox" id="screen-animation-toggle"/>
+            </div>
+            <div class="shortcut-item">
+                <label for="cover-animation-toggle" data-i18n="settings.animation.cover.enable"></label>
+                <input type="checkbox" id="cover-animation-toggle"/>
+            </div>
+            <div class="shortcut-item">
+                <label for="pulse-animation-toggle" data-i18n="settings.animation.pulse.enable"></label>
+                <input type="checkbox" id="pulse-animation-toggle"/>
+            </div>
+            <div style="flex-direction: row; margin-top: 2vh;">
+                <h data-i18n="settings.cover.title" style="margin-right: 2vw;"></h>
+                <select id="cover-select" class="selector">
+                    <option value="circle" data-i18n="settings.cover.circle"></option>
+                    <option data-animation-cover="false" value="rounded" data-i18n="settings.cover.rounded"></option>
+                </select>
+                <button id="set-cover-btn" style="width: auto; max-height: 5vh;" 
+                data-i18n="settings.cover.approve.button"></button>
+            </div>
+            <button id="theme-btn-custom" style="width: auto; min-height: 10vh; background: var(--progress-gradient);" 
+            data-theme="custom" data-i18n="settings.theme.custom"></button>
+            <button id="theme-btn-sun" style="width: auto; min-height: 10vh;" 
+            data-theme="light" data-i18n="settings.theme.sun"></button>
+            <button id="theme-btn-moon" style="width: auto; min-height: 10vh;" 
+            data-theme="moon" data-i18n="settings.theme.moon"></button>
+            <button id="theme-btn-dark" style="width: auto; min-height: 10vh;" 
+            data-theme="dark" data-i18n="settings.theme.dark"></button>
+            <button id="theme-btn-drakula" style="width: auto; min-height: 10vh;" 
+            data-theme="drakula" data-i18n="settings.theme.drakula"></button>
+            <button id="theme-btn-greentea" style="width: auto; min-height: 10vh;" 
+            data-theme="greentea" data-i18n="settings.theme.greentea"></button>
+            <button id="theme-btn-grass" style="width: auto; min-height: 10vh;" 
+            data-theme="green" data-i18n="settings.theme.grass"></button>
+        </div>
+
+        <div id="settings-content-shortcut" class="scroll-list settings-pannel">
+            <h2 style="align-items: center;" data-i18n="settings.shortcut.title"></h2>
+            <div class="shortcut-item">
+                <div>
+                    <span style="font-weight: bold; margin-right: 3vw;" 
+                    data-i18n="settings.shortcut.pause"></span>
+                    <code id="shortcut-pause" class="debug-log">Ctrl + Space</code>
+                </div>
+                <button id="shortcut-btn-pause" data-i18n="settings.shortcut.change"></button>
+            </div>
+
+            <div class="shortcut-item">
+                <div>
+                    <span style="font-weight: bold; margin-right: 3vw;" 
+                    data-i18n="settings.shortcut.next"></span>
+                    <code id="shortcut-next" class="debug-log">Ctrl + Right</code>
+                </div>
+                <button id="shortcut-btn-next" data-i18n="settings.shortcut.change"></button>
+            </div>
+
+            <div class="shortcut-item">
+                <div>
+                    <span style="font-weight: bold; margin-right: 3vw;" 
+                    data-i18n="settings.shortcut.prev"></span>
+                    <code id="shortcut-prev" class="debug-log">Ctrl + Left</code>
+                </div>
+                <button id="shortcut-btn-prev" data-i18n="settings.shortcut.change"></button>
+            </div>
+        </div>
+
+        <div id="settings-content-equalizer" class="scroll-list settings-pannel equalizer-panel">
+            <h2 style="align-items: center;" data-i18n="settings.equalizer.title"></h2>
+            <p data-i18n="settings.equalizer.note"></p>
+
+            <div class="eq-canvas">
+                <svg id="eq-curve" viewBox="0 0 600 160" preserveAspectRatio="none">
+                <path id="eq-path" d="" />
+                <circle class="eq-dot" data-band="0" />
+                <circle class="eq-dot" data-band="1" />
+                <circle class="eq-dot" data-band="2" />
+                <circle class="eq-dot" data-band="3" />
+                <circle class="eq-dot" data-band="4" />
+                <circle class="eq-dot" data-band="5" />
+                </svg>
+            </div>
+
+            <div class="eq-labels">
+                <span>60Hz</span>
+                <span>150Hz</span>
+                <span>400Hz</span>
+                <span>1kHz</span>
+                <span>2.4kHz</span>
+                <span>15kHz</span>
+            </div>
+
+            <!-- Hidden sliders = logic only -->
+            <div class="eq-sliders-hidden">
+                <input type="range" min="-12" max="12" value="0" id="eq-60">
+                <input type="range" min="-12" max="12" value="0" id="eq-150">
+                <input type="range" min="-12" max="12" value="0" id="eq-400">
+                <input type="range" min="-12" max="12" value="0" id="eq-1000">
+                <input type="range" min="-12" max="12" value="0" id="eq-2400">
+                <input type="range" min="-12" max="12" value="0" id="eq-15000">
+            </div>
+
+            <button id="reset-equalizer-btn" class="eq-reset" data-i18n="settings.equalizer.reset"></button>
+        </div>
+    </div>
+
+    <script src="script/global.js"></script>
+    <script src="script/i18n.js"></script>
+    <script src="script/qwebchannel.js"></script>
+    <script src="script/script.js"></script>
+    <script src="script/screen.js"></script>
+    <script src="script/folders.js"></script>
+    <script src="script/playback.js"></script>
+    <script src="script/buttons.js"></script>
+    <script src="script/settings.js"></script>
+</body>
+</html>
