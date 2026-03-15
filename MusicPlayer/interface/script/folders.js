@@ -18,10 +18,22 @@ function populateFolders(folders) {
 
 function populateTracks(tracks) {
     UI.trackList.innerHTML = '';
+    let lastAlbum = null;
+
     tracks.forEach(track => {
+        const currentAlbum = track.album || 'Unknown Album';
+        if (currentAlbum !== lastAlbum) {
+            const albumHeader = document.createElement('div');
+            albumHeader.classList.add('album-separator');
+            albumHeader.innerHTML = `<span>${currentAlbum}</span>`;
+            UI.trackList.appendChild(albumHeader);
+            lastAlbum = currentAlbum;
+        }
+
         const div = document.createElement('div');
         div.classList.add('track-item');
         div.dataset.path = track.path;
+        div.dataset.album = (track.album || '').toLowerCase();
         const cover = track.cover_path 
             ? `<img src="${track.cover_path.startsWith('file://') ? track.cover_path : 'file://' + track.cover_path}" 
                     style="width:3rem;height:3rem;margin-right:0.5rem;border-radius:0.5rem;vertical-align:middle;">` 
@@ -66,6 +78,7 @@ function updateTrackInfo(track) {
             : '';
         UI.trackCover.classList.remove('change');
     }, 300);
+    loadLyrics(track.path);
 }
 
 // Highlight currently playing track

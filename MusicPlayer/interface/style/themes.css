@@ -7,17 +7,17 @@
 }
 
 :root[data-theme="green"] {
-    --glass-color: rgba(255, 255, 255, 0.15);
-    --border-glass: rgba(255, 255, 255, 0.3);
-    --text-color: #f5f6fc;
-    --highlight: rgba(83, 255, 198, 0.3);
+    --glass-color: #1e3a3466;
+    --border-glass: #325c528d;
+    --text-color: #e6f2ee;
+    --highlight: rgba(83, 255, 198, 0.679);
     --pulse: rgb(104, 255, 205);
-    --accent: #48ffe048;
-    --body-gradient: linear-gradient(135deg, #16423b, #0d635d, #0b4f41);
-    --time-color: #b8fff0;
-    --scroll-bg: rgba(255, 255, 255, 0.1);
-    --input-bg: rgba(255, 255, 255, 0.2);
-    --input-focus-bg: rgba(255, 255, 255, 0.3);
+    --accent: #264d44cf;
+    --body-gradient: linear-gradient(135deg, #0f2f2a, #073734, #062f27);
+    --time-color: #5dfcda;
+    --scroll-bg: #162e2986;
+    --input-bg: #2a524a5b;
+    --input-focus-bg: #366b6077;
     --progress-gradient: linear-gradient(90deg, #00ffc8, #00ff99, #00ffc8);
     --thumb-gradient: radial-gradient(circle at 30% 30%, #b8fff0, #00ffc8 80%);
     --thumb-active-gradient: radial-gradient(circle at 30% 30%, #ffffff, #00ffcc 70%);
@@ -25,17 +25,17 @@
 }
 
 :root[data-theme="moon"] {
-    --glass-color: rgba(20, 20, 20, 0.35);
-    --border-glass: rgba(80, 80, 80, 0.4);
-    --text-color: #e0e0e0;
+    --glass-color: #1a152076;
+    --border-glass: #3d2b5283;
+    --text-color: #eaddff;
     --highlight: rgba(217, 0, 255, 0.3);
-    --pulse: rgb(213, 0, 255);
-    --accent: #bb00ffa0;
+    --pulse: rgb(197, 0, 236);
+    --accent: #251b3090;
     --body-gradient: linear-gradient(135deg, #0a0a0a, #1a1a1a, #0f0f0f);
     --time-color: #d333ff;
-    --scroll-bg: rgba(50, 50, 50, 0.3);
-    --input-bg: rgba(30, 30, 30, 0.3);
-    --input-focus-bg: rgba(50, 50, 50, 0.5);
+    --scroll-bg: #1a15208b;
+    --input-bg: #251b3066;
+    --input-focus-bg: #35264578;
     --progress-gradient: linear-gradient(90deg, #9000ff, #aa00ff, #9900ff);
     --thumb-gradient: radial-gradient(circle at 30% 30%, #a733ff, #a200ff 80%);
     --thumb-active-gradient: radial-gradient(circle at 30% 30%, #ffffff, #d000ff 70%);
@@ -80,17 +80,17 @@
 }
 
 :root[data-theme="greentea"] {
-    --glass-color: rgba(127, 127, 127, 0.234);
-    --border-glass: rgba(182, 182, 182, 0.748);
-    --text-color: #f5f6fc;
+    --glass-color: #5b89696a;
+    --border-glass: #7ebc8ea3;
+    --text-color: #f0fff4;
     --highlight: rgba(255, 255, 255, 0.266);
     --pulse: rgb(178, 217, 162);
-    --accent: #0d0d0d17;
-    --body-gradient: linear-gradient(135deg, #0f501e9d, #11832bae, #0b4d1e9f);
-    --time-color: #d9d9d9;
-    --scroll-bg: rgba(255, 255, 255, 0.1);
-    --input-bg: rgba(255, 255, 255, 0.2);
-    --input-focus-bg: rgba(255, 255, 255, 0.3);
+    --accent: #517e60bb;
+    --body-gradient: linear-gradient(135deg, #092c119d, #094617bc, #062a109f);
+    --time-color: #c4e4c4;
+    --scroll-bg: #45614e74;
+    --input-bg: #40564963;
+    --input-focus-bg: #5b776471;
     --progress-gradient: linear-gradient(90deg, #8da98d, #8ab17d, #a3cda4);
     --thumb-gradient: radial-gradient(circle at 30% 30%, #f1f1f1, #9e9e9e 80%);
     --thumb-active-gradient: radial-gradient(circle at 30% 30%, #ffffff, #a9a9a9 70%);

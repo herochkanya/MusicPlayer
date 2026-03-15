@@ -54,6 +54,12 @@
     "player.title": "Chose",
     "player.artist": "Your track",
 
+    "player.title.shuffle": "Shuffle",
+    "player.title.cycle": "Cycle",
+    "player.title.lyrics": "Lyrics",
+    "player.title.mini-player": "Mini-player",
+    "player.title.fullscreen": "Fullscreen",
+
     "downloader.url": "Input URL",
     "downloader.folder": "Folder (for example: downloads)",
     "downloader.start": "Download",

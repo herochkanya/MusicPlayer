@@ -2,27 +2,117 @@
 
 # Module for downloading audio using yt-dlp and tagging with mutagen
 
-import os, requests
+import os, requests, re
 from yt_dlp import YoutubeDL
 from mutagen.easyid3 import EasyID3
 from mutagen.id3 import ID3, APIC
+from mutagen.id3 import ID3, USLT, SYLT
 from config import get_download_path
 from .utils import sanitize_filename, find_ffmpeg_path, get_resource_type
 
 requests.packages.urllib3.disable_warnings()
 
-def tag_file(filepath, title, artist):
+def is_synced(lrc_content):
+    if not lrc_content:
+        return False
+    return bool(re.search(r'\[\d{2}:\d{2}\.\d{2,3}\]', lrc_content))
+
+def fetch_from_netease(artist, title):
     try:
-        audio = EasyID3(filepath)
+        search_url = f"https://music.cyrany.so/search?keywords={artist} {title}&limit=1"
+        r = requests.get(search_url, timeout=5)
+        if r.status_code == 200 and r.json()['result']['songs']:
+            song_id = r.json()['result']['songs'][0]['id']
+            lyric_url = f"https://music.cyrany.so/lyric?id={song_id}"
+            l_resp = requests.get(lyric_url, timeout=5)
+            if l_resp.status_code == 200:
+                lrc = l_resp.json().get('lrc', {}).get('lyric')
+                if is_synced(lrc):
+                    return lrc
     except:
-        audio = EasyID3()
-        audio.save(filepath)
-        audio = EasyID3(filepath)
+        pass
+    return None
+
+def fetch_lrc_smart(artist, title, album, duration, output_path):
+    final_lrc = None
+    is_final_synced = False
+
+    try:
+        # LRCLIB
+        params = {
+            'artist_name': artist, 
+            'track_name': title, 
+            'album_name': album or '', 
+            'duration': duration
+            }
+        resp = requests.get("https://lrclib.net/api/get", params=params, timeout=7)
+        
+        if resp.status_code == 200:
+            data = resp.json()
+            synced = data.get('syncedLyrics')
+            plain = data.get('plainLyrics')
+            
+            if synced:
+                final_lrc = synced
+                is_final_synced = True
+            else:
+                final_lrc = plain
+        
+        # NetEase
+        if not is_final_synced:
+            print(f"🔄 Synced lyrics not found on LRCLIB, trying NetEase...")
+            netease_lrc = fetch_from_netease(artist, title)
+            if netease_lrc:
+                final_lrc = netease_lrc
+                is_final_synced = True
+                print("✅ Found synced lyrics on NetEase!")
+
+        # Saving
+        if final_lrc:
+            with open(output_path, 'w', encoding='utf-8') as f:
+                f.write(final_lrc)
+            status = "synced" if is_final_synced else "plain"
+            print(f"✅ Lyrics saved ({status})")
+            return True
+
+    except Exception as e:
+        print(f"⚠️ Lyrics fetch error: {e}")
     
-    audio['title'] = title
-    audio['artist'] = artist
-    audio.save()
-    print(f"🏷️ Tagged: {artist} - {title}")
+    return False
+
+def tag_file(filepath, title, artist, album=None, cover_path=None):
+    try:
+        try:
+            audio = EasyID3(filepath)
+        except:
+            audio = EasyID3()
+            audio.save(filepath)
+            audio = EasyID3(filepath)
+        
+        audio['title'] = title
+        audio['artist'] = artist
+
+        if album and not album.startswith("Related tracks"):
+            audio['album'] = album
+        else:
+            audio['album'] = ""
+        
+        audio.save()
+        print(f"🏷️ Tagged: {artist} - {title} (Album: {album or 'N/A'})")
+        if cover_path and os.path.exists(cover_path):
+            tags = ID3(filepath)
+            with open(cover_path, 'rb') as f:
+                tags.add(APIC(
+                    encoding=3,
+                    mime='image/jpeg' if cover_path.endswith(('.jpg', '.jpeg')) else 'image/png',
+                    type=3,
+                    desc=u'Cover',
+                    data=f.read()
+                ))
+            tags.save(v2_version=3)
+            print(f"🖼️ Cover embedded for: {title}")
+    except Exception as e:
+        print(f"❌ Tagging error: {e}")
 
 def resolve_spotify_to_youtube(url):
     try:
@@ -99,6 +189,13 @@ def download_audio(url: str, target_folder: str = None, cookies_path: str = None
         'noplaylist': False,
         'prefer_ffmpeg': True,
 
+        'nocheckcertificate': True,
+        'cachedir': False,
+
+        'writesubtitles': True,
+        'subtitleslangs': ['all'],
+        'writeautomaticsubs': True,
+
         'http_headers': {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -113,6 +210,7 @@ def download_audio(url: str, target_folder: str = None, cookies_path: str = None
                 'preferredquality': '192',
             },
 
+            {'key': 'FFmpegMetadata'},
             {'key': 'EmbedThumbnail'},
         ],
 
@@ -132,11 +230,13 @@ def download_audio(url: str, target_folder: str = None, cookies_path: str = None
                
                 raw_title = entry.get('title', 'Unknown')
                 uploader = entry.get('uploader', 'Unknown Artist')
-
+                yt_album = entry.get('album')
                 yt_artist = entry.get('artist') or entry.get('creator')
+                duration = entry.get('duration')
 
                 final_title = raw_title
                 final_artist = yt_artist if yt_artist else uploader
+                final_album = yt_album
 
                 if info_spot and not entry.get('entries'):
                     final_title = info_spot['title']
@@ -147,21 +247,45 @@ def download_audio(url: str, target_folder: str = None, cookies_path: str = None
                     final_title = parts[1].strip()
 
                 temp_filename = ydl.prepare_filename(entry)
-                original_file = temp_filename.rsplit('.', 1)[0] + '.mp3'
+                base_path = temp_filename.rsplit('.', 1)[0]
+                original_file = base_path + '.mp3'
+
+                cover_file = None
+                for ext in ['.jpg', '.jpeg', '.webp', '.png']:
+                    if os.path.exists(base_path + ext):
+                        cover_file = base_path + ext
+                        break
+                
                 clean_artist = sanitize_filename(final_artist)
                 clean_title = sanitize_filename(final_title)
-                safe_name = f"{clean_artist} - {clean_title}.mp3"
-                final_path = os.path.join(download_dir, safe_name)
+
+                safe_name = f"{clean_artist} - {clean_title}"
+                file_base_name = safe_name + ".mp3"
+                final_path = os.path.join(download_dir, file_base_name)
+                lrc_path = os.path.join(download_dir, safe_name + ".lrc")
 
                 if os.path.exists(original_file):
-                    tag_file(original_file, final_title, final_artist)
+                    tag_file(original_file, final_title, final_artist, final_album, cover_path=cover_file)
                     if os.path.exists(final_path): os.remove(final_path)
                     os.rename(original_file, final_path)
+
+                    yt_lrc = base_path + ".lrc"
+                    if os.path.exists(yt_lrc):
+                        os.rename(yt_lrc, lrc_path)
+                    else:
+                        fetch_lrc_smart(final_artist, final_title, yt_album, duration, lrc_path)
+                    
+                    for f in os.listdir(download_dir):
+                        if f.startswith(os.path.basename(base_path)) and f.endswith(('.webp', '.jpg', '.png', '.jpeg')):
+                            try: os.remove(os.path.join(download_dir, f))
+                            except: pass
 
                 return {
                     'title': final_title,
                     'artist': final_artist,
+                    'album': final_album if final_album and not final_album.startswith("Related") else None,
                     'path': final_path,
+                    'lyrics_path': lrc_path if os.path.exists(lrc_path) else None,
                     'thumbnail_url': entry.get('thumbnail'),
                     'source_url': entry.get('webpage_url', '')
                 }

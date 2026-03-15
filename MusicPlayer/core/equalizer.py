@@ -1,3 +1,5 @@
+# equalizer.py
+
 import math
 import numpy as np
 import scipy.signal as signal
@@ -9,6 +11,26 @@ class Equalizer:
         self.gains = {freq: 0.0 for freq in self.BANDS}
         self.filters_state = {}
         self._cache = {}
+
+        self._volume = 1.0
+        self._is_muted = False
+        self._prev_volume = 1.0
+    
+    def set_volume(self, volume_percent: int):
+        # volume_percent comes from JS (0-100)
+        self._volume = max(0.0, min(1.0, volume_percent / 100.0))
+        if self._volume > 0:
+            self._is_muted = False
+
+    def toggle_mute(self) -> bool:
+        if not self._is_muted:
+            self._prev_volume = self._volume
+            self._volume = 0.0
+            self._is_muted = True
+        else:
+            self._volume = self._prev_volume
+            self._is_muted = False
+        return self._is_muted
 
     def set_band(self, freq: int, gain_db: float):
         freq = int(freq)
@@ -42,34 +64,29 @@ class Equalizer:
 
     # Apply equalizer to audio data
     def process(self, data: np.ndarray, samplerate: int) -> np.ndarray:
-        if all(g == 0 for g in self.gains.values()):
-            return data
-
         output = data.copy()
         
-        for freq in self.BANDS:
-            gain = self.gains[freq]
-            if gain == 0:
-                continue
-            
-            # Cache coefficients
-            if (freq, samplerate) not in self._cache:
-                self._cache[freq] = self._get_coefficients(freq, samplerate, gain)
-            
-            # Retrieve cached coefficients
-            if freq not in self._cache:
-                self._cache[freq] = self._get_coefficients(freq, samplerate, gain)
+        if not all(g == 0 for g in self.gains.values()):
+            for freq in self.BANDS:
+                gain = self.gains[freq]
+                if gain == 0: continue
+                
+                if (freq, samplerate) not in self._cache:
+                    self._cache[freq] = self._get_coefficients(freq, samplerate, gain)
 
-            b, a = self._cache[freq]
-            
-            # Initialize filter state if not present
-            if freq not in self.filters_state or self.filters_state[freq].shape[1] != data.shape[1]:
-                n_order = max(len(a), len(b)) - 1
-                self.filters_state[freq] = np.zeros((n_order, data.shape[1]))
+                b, a = self._cache[freq]
+                
+                if freq not in self.filters_state or self.filters_state[freq].shape[1] != data.shape[1]:
+                    n_order = max(len(a), len(b)) - 1
+                    self.filters_state[freq] = np.zeros((n_order, data.shape[1]))
 
-            # Chain filtering
-            output, self.filters_state[freq] = signal.lfilter(
-                b, a, output, axis=0, zi=self.filters_state[freq]
-            )
+                output, self.filters_state[freq] = signal.lfilter(
+                    b, a, output, axis=0, zi=self.filters_state[freq]
+                )
+
+        # 2. Apply Software Volume Control
+        # Multiplying the array by volume coefficient
+        if self._volume != 1.0:
+            output = output * self._volume
             
         return output.astype('float32')

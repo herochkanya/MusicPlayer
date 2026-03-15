@@ -1,0 +1,23 @@
+{
+  "equalizer": {
+    "1000": 0,
+    "150": 0,
+    "15000": 0,
+    "2400": 0,
+    "400": 0,
+    "60": 0
+  },
+  "cover_settings": {
+    "data-cover": "circle"
+  },
+  "animation_settings": {
+    "cover": true,
+    "pulse": true,
+    "screen": true
+  },
+  "theme": "dark",
+  "lite_mode": false,
+  "custom_background": "C:/Users/Nobody/Pictures/download (1).jpg",
+  "language": "en",
+  "tray_mode": false
+}

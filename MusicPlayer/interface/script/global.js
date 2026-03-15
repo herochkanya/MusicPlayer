@@ -9,8 +9,12 @@ window.UI = {
     openSettingsBtn: document.getElementById('open-settings-btn'),
 
     debugLog: document.getElementById('debug-log'),
+    queueBar: document.getElementById('queue-progress-bar'),
+    queueCount: document.getElementById('queue-count'),
     startDownloadBtn: document.getElementById('start-download-btn'),
-    urlInput: document.getElementById('url-input'),
+    urlListContainer: document.querySelector('.downloader-scroll-list'),
+    newUrlBtn: document.getElementById('new-url-btn'),
+    trackPreList: document.getElementById('track-pre-list'),
 
     foldersList: document.getElementById('folders-list'),
     folderInput: document.getElementById('folder-input'),
@@ -30,6 +34,14 @@ window.UI = {
     
     cycleBtn: document.getElementById('cycle-btn'),
     randomBtn: document.getElementById('random-btn'),
+
+    lyricsPanel: document.getElementById('lyrics-panel'),
+
+    lyricsBtn: document.getElementById('lyrics-btn'),
+    muteBtn: document.getElementById('mute-btn'),
+    volumeBar: document.getElementById('volume-bar'),
+    miniplayerBtn: document.getElementById('miniplayer-btn'),
+    fullscreenBtn: document.getElementById('fullscreen-btn'),
 
     searchInput: document.getElementById('text-input'),
 

@@ -21,10 +21,104 @@ document.addEventListener('DOMContentLoaded', () => {
 
         Backend.backend.get_folders().then(folders => populateFolders(folders));
 
-        Backend.backend.log_signal.connect(msg => {
-            UI.debugLog.textContent += msg + "\n";
+        // Temporary cache for tracks to be downloaded
+        let preDownloadCache = [];
+
+        function initDownloaderSignals() {
+            if (!Backend.backend) return;
+
+            // 1. When we get info about a new track in the queue
+            Backend.backend.pre_track_info_signal.connect((meta) => {
+                // Avoid duplicates if yt-dlp sends info multiple times
+                if (!preDownloadCache.find(t => t.id === meta.id)) {
+                    preDownloadCache.push(meta);
+                    renderPreList();
+                }
+            });
+
+            // 2. When a track is finished, remove it from the list
+            Backend.backend.track_finished_signal.connect((trackId) => {
+                preDownloadCache = preDownloadCache.filter(t => t.id !== trackId);
+                renderPreList();
+            });
+        }
+
+        function renderPreList() {
+            UI.trackPreList.innerHTML = '';
+            
+            preDownloadCache.forEach(track => {
+                const div = document.createElement('div');
+                div.classList.add('track-item');
+                div.style.opacity = '0.7';
+                
+                const cover = track.thumbnail 
+                    ? `<img src="${track.thumbnail}" style="width:2.5rem;height:2.5rem;margin-right:0.5rem;border-radius:0.4rem;vertical-align:middle;object-fit:cover;">` 
+                    : '';
+                    
+                div.innerHTML = `
+                    ${cover} 
+                    <div style="display:inline-block; vertical-align:middle;">
+                        <div style="font-weight:bold; font-size:0.9rem;">${track.title}</div>
+                        <div style="font-size:0.75rem; color:var(--text-dim);">${track.artist}</div>
+                    </div>
+                `;
+                
+                UI.trackPreList.appendChild(div);
+            });
+
+            // Auto-scroll to the bottom of the pre-list
+            UI.trackPreList.scrollTop = UI.trackPreList.scrollHeight;
+        }
+        setTimeout(initDownloaderSignals, 500);
+
+        // Queue signal
+        Backend.backend.playlist_progress_signal.connect((current, total, title) => {
+            let progressEl = document.getElementById('playlist-sticky-log');
+            
+            if (total <= 1 && current === 0) {
+                if (progressEl) progressEl.style.display = 'none';
+                return;
+            }
+
+            progressEl.style.display = 'block';
+            progressEl.textContent = `📦 Playlist: ${title} | Track: ${current} of ${total} 🚀`;
+            
             UI.debugLog.scrollTop = UI.debugLog.scrollHeight;
         });
+
+        // Log signal
+        Backend.backend.log_signal.connect(msg => {
+            const cleanMsg = msg.trim();
+            if (!cleanMsg) return;
+
+            let currentLog = UI.debugLog.textContent;
+
+            const isProgress = cleanMsg.includes('⬇️') || cleanMsg.includes('🎵');
+
+            if (isProgress) {
+                let lines = currentLog.split('\n');
+                
+                if (lines.length > 0 && (lines[lines.length - 1].includes('⬇️') || lines[lines.length - 1].includes('🎵'))) {
+                    lines[lines.length - 1] = cleanMsg;
+                    UI.debugLog.textContent = lines.join('\n');
+                } else {
+                    UI.debugLog.textContent += (currentLog ? '\n' : '') + cleanMsg;
+                }
+            } else {
+                UI.debugLog.textContent += (currentLog ? '\n' : '') + cleanMsg;
+            }
+
+            UI.debugLog.scrollTop = UI.debugLog.scrollHeight;
+        });
+
+        // Clear the static HTML placeholders first
+        UI.urlListContainer.innerHTML = '';
+        addUrlRow();
+
+        // Attach event listener to the "Add" button
+        if (UI.newUrlBtn) {
+            UI.newUrlBtn.addEventListener('click', () => addUrlRow());
+        }
 
         Backend.backend.get_folders().then(folders => {
             UI.folderSelect.innerHTML = '';

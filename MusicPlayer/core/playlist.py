@@ -92,6 +92,12 @@ class PlaylistManager(Modes):
                 self.build_library_index()
 
             tracks = self._resolve_query(self.current_query)
+            
+            tracks.sort(key=lambda t: (
+                (t.album if t.album and t.album.strip() else "ZZZZZ"), 
+                (t.title if t.title else "")
+            ))
+
             self.playlist = tracks
             self.current_index = self._sync_current_index(tracks)
 

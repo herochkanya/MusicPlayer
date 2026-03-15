@@ -18,11 +18,25 @@
 </header>
 <body>
     <div id="downloader-screen" class="screen downloader-screen">
-        <input type="text" id="url-input" data-i18n-placeholder="downloader.url" />
-        <input type="text" id="folder-input" data-i18n-placeholder="downloader.folder" />
-        <div id="folders-list" class="scroll-list"></div>
-        <button id="start-download-btn" data-i18n="downloader.start"></button>
-        <pre id="debug-log" class="debug-log"></pre>
+        <div>
+           <div class="scroll-list downloader-scroll-list" style="margin-top: 4vh; max-height: 60vh;">
+            </div>
+            <button id="new-url-btn" class="emoji-button" style="font-size: 1rem; width: 8vw; margin: auto;
+                aspect-ratio: 3 / 1">+
+            </button>
+        </div>
+        <div style="margin: 3vh;">
+            <input type="text" id="folder-input" data-i18n-placeholder="downloader.folder" />
+            <div id="folders-list" class="scroll-list downloader-scroll-list"></div>
+            <button id="start-download-btn" class="emoji-button" style="font-size: 1rem; width: 20vw; margin: auto;
+                aspect-ratio: 5 / 1" data-i18n="downloader.start"></button>
+        </div>
+        <div style="flex-direction: column;">
+            <pre id="debug-log" class="debug-log"></pre> 
+            <pre id="playlist-sticky-log" class="debug-log" style="height: 10vh;"></pre>
+            <div id="track-pre-list" class="scroll-list" style="width: 30vw; height: 40vh; margin: auto"></div>
+            
+        </div>       
     </div>
 
     <div id="player-screen" class="screen player-screen">
@@ -37,9 +51,10 @@
                 <div id="folder-select" class="scroll-list" style="width: 20vw; margin: 1vw;"></div>
             </div>
             <div id="track-list" class="scroll-list" style="width: 20vw; margin: 2vw;"></div>
+            <div id="lyrics-panel" class="scroll-list"></div>
         </div>
 
-        <div class="player-screen-playback" style="margin-left: 7vw;">
+        <div class="player-screen-playback">
             <div id="now-playing">
                 <img id="track-cover" src=""/>
                 <p style="margin: 1vh;"></p>
@@ -60,11 +75,25 @@
             </div>
 
             <div class="controls">
-                <button id="random-btn" class="emoji-button" style="font-size: 1.3rem; width: 3vw;">⇉</button>
+                <button id="random-btn" class="emoji-button" style="font-size: 1.3rem; width: 3vw;"
+                    data-i18n-title="player.title.shuffle">⇉</button>
                 <button id="back-btn" class="emoji-button" style="font-size: 1.8rem; width: 3.5vw;">⦉</button>
                 <button id="playpause-btn" class="emoji-button" style="border-radius: 50%; width: 4.5vw;">►</button>
                 <button id="next-btn" class="emoji-button" style="font-size: 1.8rem; width: 3.5vw;">⦊</button>
-                <button id="cycle-btn" class="emoji-button" style="font-size: 1.3rem; width: 3vw;">➜</button>
+                <button id="cycle-btn" class="emoji-button" style="font-size: 1.3rem; width: 3vw;"
+                    data-i18n-title="player.title.cycle">➜</button>
+            </div>
+            
+            <div class="controls secondary-controls">
+                <button id="lyrics-btn" class="emoji-button side-tool" data-i18n-title="player.title.lyrics">🎤</button>
+                
+                <div class="volume-container">
+                    <button id="mute-btn" class="emoji-button" style="font-size: 1.2rem; width: 2.5vw;">🔊</button>
+                    <input type="range" id="volume-bar" min="0" max="100" value="100" class="volume-slider">
+                </div>
+
+                <button id="miniplayer-btn" class="emoji-button side-tool" data-i18n-title="player.title.mini-player">🗖</button>
+                <button id="fullscreen-btn" class="emoji-button side-tool" data-i18n-title="player.title.fullscreen">⛶</button>
             </div>
         </div>
     </div>
@@ -241,5 +270,6 @@
     <script src="script/playback.js"></script>
     <script src="script/buttons.js"></script>
     <script src="script/settings.js"></script>
+    <script src="script/downloader.js"></script>
 </body>
 </html>

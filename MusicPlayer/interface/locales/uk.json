@@ -54,6 +54,12 @@
     "player.title": "Оберіть",
     "player.artist": "Свій трек",
 
+    "player.title.shuffle": "Перемішати",
+    "player.title.cycle": "Цикл",
+    "player.title.lyrics": "Лірика",
+    "player.title.mini-player": "Міні-плеєр",
+    "player.title.fullscreen": "Повний екран",
+
     "downloader.url": "Введіть URL",
     "downloader.folder": "Папка (наприклад: downloads)",
     "downloader.start": "Завантажити",

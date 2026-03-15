@@ -37,6 +37,10 @@ class Playback:
         with self._lock:
             if playlist is not None:
                 self.playlist_playback = playlist
+                if self._shuffle_mode:
+                    self.apply_shuffle_logic()
+                else:
+                    self.playlist_playback = playlist
                 self.current_index = 0
                 path = self.playlist_playback[0]
 

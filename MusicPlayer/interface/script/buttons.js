@@ -52,12 +52,77 @@ document.addEventListener('DOMContentLoaded', () => {
         Backend.backend.set_global_playlist().then(tracks => populateTracks(tracks));
     });
 
-    // Search input filtering
+    // Search input filtering for both Tracks and Folders
     UI.searchInput.addEventListener('input', () => {
         const query = UI.searchInput.value.trim().toLowerCase();
-        Array.from(UI.trackList.children).forEach(div => {
-            const title = div.querySelector('span')?.textContent.toLowerCase() || '';
-            div.style.display = title.includes(query) ? '' : 'none';
+        const trackItems = Array.from(UI.trackList.children);
+        const folderContainers = [UI.foldersList, UI.folderSelect];
+        
+        // Track
+        trackItems.forEach(div => {
+            if (div.classList.contains('album-separator')) return;
+
+            const content = div.textContent.toLowerCase();
+            const album = div.dataset.album ? div.dataset.album.toLowerCase() : '';
+
+            const isVisible = content.includes(query) || album.includes(query);
+            div.style.display = isVisible ? '' : 'none';
+        });
+
+        // Album
+        let lastHeader = null;
+        let hasVisibleTracksInAlbum = false;
+
+        trackItems.forEach(div => {
+            if (div.classList.contains('album-separator')) {
+                if (lastHeader && !hasVisibleTracksInAlbum) {
+                    lastHeader.style.display = 'none';
+                }
+                lastHeader = div;
+                lastHeader.style.display = ''; 
+                hasVisibleTracksInAlbum = false;
+            } else if (div.style.display !== 'none') {
+                hasVisibleTracksInAlbum = true;
+            }
+        });
+        
+        if (lastHeader && !hasVisibleTracksInAlbum) {
+            lastHeader.style.display = 'none';
+        }
+
+        // Folders
+        folderContainers.forEach(container => {
+            if (container) {
+                Array.from(container.children).forEach(folderDiv => {
+                    const folderName = folderDiv.textContent.toLowerCase();
+                    
+                    if (folderName.includes(query)) {
+                        folderDiv.style.display = ''; 
+                    } else {
+                        folderDiv.style.display = 'none';
+                    }
+                });
+            }
+        });
+    });
+
+    UI.folderInput.addEventListener('input', () => {
+        const query = UI.folderInput.value.trim().toLowerCase();
+        const folderContainers = [UI.foldersList, UI.folderSelect];
+
+        // Folders filtrating
+        folderContainers.forEach(container => {
+            if (container) {
+                Array.from(container.children).forEach(folderDiv => {
+                    const folderName = folderDiv.textContent.toLowerCase();
+                    
+                    if (folderName.includes(query)) {
+                        folderDiv.style.display = ''; 
+                    } else {
+                        folderDiv.style.display = 'none';
+                    }
+                });
+            }
         });
     });
 
@@ -84,16 +149,5 @@ document.addEventListener('DOMContentLoaded', () => {
             UI.setPlaylistBtn.classList.add('active');
             Backend.selectedPlaylists.clear();
         }
-    });
-
-    // Start download button
-    UI.startDownloadBtn.addEventListener('click', () => {
-        const url = UI.urlInput.value.trim();
-        const folder = UI.folderInput.value.trim() || 'downloads';
-        if (!url) return UI.debugLog.textContent += 'Please enter a URL!\n';
-        Backend.backend.log_signal.connect(msg => {
-            UI.debugLog.textContent = msg;
-        });
-        Backend.backend.start_download(url, folder);
     });
 });

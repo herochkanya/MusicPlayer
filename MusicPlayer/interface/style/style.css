@@ -37,7 +37,6 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    user-select: none;
 }
 
 @keyframes bgFlow {
@@ -97,11 +96,7 @@ body {
 /* ===== Downloader screen ===== */
 
 .downloader-screen {
-    flex-direction: column; 
-    max-width: 23vw;
-    max-height: 70vw;
-    margin-left: 5vw; 
-    margin-right: -4vw;
+    flex-direction: row;
 }
 
 /* ===== Selector ===== */
@@ -140,6 +135,7 @@ body {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
     max-width: 50vw;
     max-height: 70vw;
+    margin-right: 7vw;
 }
 
 .player-screen-folder {
@@ -163,12 +159,11 @@ body {
 .player-screen-playback {
     display: flex; 
     flex-direction: column; 
-    margin: 10vh; 
-    margin-right: auto; 
-    margin-bottom: 15vh; 
+    margin: auto;
     justify-content: center; 
     align-items: center; 
-    max-height: 80vh;
+    max-height: 60vh;
+    max-width: 40vh;
 }
 
 /* ===== Settings pannel ===== */
@@ -285,6 +280,13 @@ button:active {
     50% { box-shadow: 0 0 40px var(--pulse); }
 }
 
+/* ===== Downloader scroll list ===== */
+
+.downloader-scroll-list {
+    max-height: 50vh;
+    margin: 1vw;
+}
+
 /* ===== Track cover ===== */
 
 #track-cover {
@@ -348,6 +350,56 @@ button:active {
     margin-top: 1vh;
 }
 
+/* ===== Secondary controls ===== */
+
+.secondary-controls {
+    margin-top: -2vh;
+    gap: 0.5rem;
+    padding: 1vw;
+    border-radius: 2rem;
+}
+
+.volume-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    width: 12vw;
+}
+
+.volume-slider {
+    margin-top: 2vh;
+    appearance: none;
+    -webkit-appearance: none;
+    height: 1vh;
+    background: var(--input-bg);
+    border-radius: 1rem;
+    cursor: pointer;
+    outline: none;
+}
+
+.volume-slider::-webkit-slider-runnable-track {
+    background: var(--progress-gradient);
+    border-radius: 1rem;
+}
+
+.volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--text-color);
+    border-radius: 50%;
+    margin-top: -4px;
+    box-shadow: 0 0 10px var(--highlight);
+    border: 2px solid var(--accent);
+}
+
+.side-tool {
+    font-size: 1.1rem !important;
+    width: 2.8vw !important;
+    opacity: 0.8;
+}
+
 /* ===== Now playing ===== */
 
 #now-playing {
@@ -375,12 +427,14 @@ button:active {
     background: rgba(0, 19, 11, 0.6);
     color: #00ff88;
     padding: 1vh 1vw;
-    height: 50vh;
+    height: 20vh;
+    width: 30vw;
     overflow-y: auto;
     font-family: monospace;
     white-space: pre-wrap;
     border-radius: 1rem;
     border: 1px solid #333;
+    margin: 1vh;
     margin-top: 2vh;
 }
 
@@ -459,6 +513,36 @@ button:active {
 .track-slider:active::-webkit-slider-thumb {
     transform: scale(1.3);
     background: var(--thumb-active-gradient);
+}
+
+/* ===== Album sorting ===== */
+
+.album-separator {
+    padding: 1.5rem 0.5rem 0.5rem 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--accent-color);
+    letter-spacing: 0.1rem;
+    opacity: 0.7;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 0.5rem;
+    pointer-events: none;
+}
+
+.track-mini-cover {
+    width: 2.5rem;
+    height: 2.5rem;
+    margin-right: 0.8rem;
+    border-radius: 0.4rem;
+    vertical-align: middle;
+    object-fit: cover;
+}
+
+.track-item {
+    margin-left: 0.5rem;
+    padding: 0.6rem;
+    transition: all 0.2s ease;
 }
 
 /* ===== Buttons with emojis ===== */
@@ -553,4 +637,38 @@ button:active {
 
 .eq-reset:hover {
   background: var(--highlight);
+}
+
+/* ===== Lyrics settings ===== */
+
+#lyrics-panel {
+    display: none;
+    width: 45vw;
+    margin: 2vw;
+    text-align: center;
+    font-size: 1.2rem;
+    line-height: 2rem;
+    scroll-behavior: smooth;
+    padding: 2rem;
+    background: var(--glass-color);
+    border: 1px solid var(--border-glass);
+    border-radius: 1.5rem;
+}
+
+.lyric-line {
+    opacity: 0.4;
+    transition: all 0.3s ease;
+    margin: 10px 0;
+}
+
+.lyric-line.current {
+    opacity: 1;
+    color: var(--text-color);
+    transform: scale(1.1);
+    font-weight: bold;
+}
+
+#lyrics-btn.active {
+    background: var(--highlight);
+    box-shadow: 0 0 15px var(--highlight);
 }

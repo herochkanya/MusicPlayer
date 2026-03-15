@@ -67,6 +67,20 @@ from core.player import MusicPlayer
 from config import get_music_base_dir
 from core.global_hotkeys import GlobalHotkeys
 
+# yt-dlp autoupdate
+def update_libraries():
+    try:
+        print("🔄 Checking for yt-dlp updates...")
+        subprocess.run(
+            [sys.executable, "-m", "pip", "install", "-U", "yt-dlp"],
+            capture_output=True, 
+            text=True,
+            check=True
+        )
+        print("✅ yt-dlp is up to date.")
+    except Exception as e:
+        print(f"⚠️ Could not update yt-dlp: {e}")
+
 # Resource helper
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -83,10 +97,71 @@ class Worker(QRunnable):
         self.backend = backend
 
     def run(self):
+        from yt_dlp import YoutubeDL
+        
+        # --- PHASE 1: Pre-scan (Getting all metadata at once) ---
+        self.backend.log_signal.emit("🔍 Analyzing link and fetching playlist info...")
+        
+        scan_opts = {
+            'quiet': True,
+            'extract_flat': True,  # Just collect metadata, don't download
+            'nocheckcertificate': True,
+        }
+
+        try:
+            with YoutubeDL(scan_opts) as ydl:
+                info_data = ydl.extract_info(self.url, download=False)
+                
+                # Check if it's a playlist or a single track
+                if 'entries' in info_data:
+                    entries = list(info_data['entries'])
+                    self.backend.log_signal.emit(f"📋 Found {len(entries)} tracks. Adding to queue...")
+                    for entry in entries:
+                        if entry:
+                            meta = {
+                                'title': entry.get('title', 'Unknown'),
+                                'artist': entry.get('uploader', 'Unknown Artist'),
+                                'album': info_data.get('title', ''), # Often playlist title acts as album
+                                'thumbnail': entry.get('thumbnail', ''),
+                                'id': entry.get('id', '')
+                            }
+                            self.backend.pre_track_info_signal.emit(meta)
+                else:
+                    # Single track info
+                    meta = {
+                        'title': info_data.get('title', 'Unknown'),
+                        'artist': info_data.get('uploader', 'Unknown Artist'),
+                        'album': info_data.get('album', ''),
+                        'thumbnail': info_data.get('thumbnail', ''),
+                        'id': info_data.get('id', '')
+                    }
+                    self.backend.pre_track_info_signal.emit(meta)
+        except Exception as e:
+            print(f"DEBUG: Pre-scan error: {e}")
+            self.backend.log_signal.emit(f"⚠️ Warning: Could not pre-fetch metadata.")
+
+        # --- PHASE 2: Actual Download ---
         self.backend.log_signal.emit("⬇️ Starting download...")
+        current_track_id = None 
 
         def hook(d):
+            nonlocal current_track_id
+            
             if d['status'] == 'downloading':
+                info = d.get('info_dict', {})
+                current_idx = info.get('playlist_index', 1)
+                total_tracks = info.get('playlist_count', 1)
+                playlist_title = info.get('playlist_title', 'Single Track')
+
+                # Emit progress for the sticky log
+                self.backend.playlist_progress_signal.emit(current_idx, total_tracks, playlist_title)
+
+                # Keep track_id to know which one is currently active (optional, for UI highlights)
+                track_id = info.get('id')
+                if track_id and track_id != current_track_id:
+                    current_track_id = track_id
+                    print(f"DEBUG: Now downloading: {info.get('title')}")
+
                 downloaded = d.get('downloaded_bytes') or 0
                 total = d.get('total_bytes') or d.get('total_bytes_estimate') or 0
                 speed = d.get('speed') or 0
@@ -103,17 +178,28 @@ class Worker(QRunnable):
 
             elif d['status'] == 'finished':
                 self.backend.log_signal.emit("🎵 Processing and converting...")
+                info = d.get('info_dict', {})
+                # Remove from "Pre-list" in JS
+                self.backend.track_finished_signal.emit(info.get('id', ''))
+                current_track_id = None
 
+        # Execute the downloader from core.downloader
         result = download_audio(self.url, self.folder, progress_cb=hook)
 
         if result is None:
             self.backend.log_signal.emit("❌ Error during download.")
         else:
             self.backend.log_signal.emit("✅ Download complete.")
+        
+        # Reset playlist progress
+        self.backend.playlist_progress_signal.emit(0, 0, "")
 
 # Backend class for JS interaction
 class Backend(QObject):
     log_signal = Signal(str) # Log messages to JS
+    playlist_progress_signal = Signal(int, int, str)
+    pre_track_info_signal = Signal(dict)
+    track_finished_signal = Signal(str)
     track_changed = Signal(dict) # Track info to JS
     playback_state_changed = Signal(bool) # Is playing or paused
     theme_changed = Signal(str) # Theme change signal
@@ -192,16 +278,47 @@ class Backend(QObject):
     # Set custom playlist from list of folder names
     def create_temp_playlist(self, playlist_names):
         return self.player.set_custom_playlist(playlist_names)
+    
+    @Slot(str, result=str)
+    # Load lycic using original file name
+    def get_lyrics(self, track_path):
+        try:
+            lrc_path = track_path.rsplit('.', 1)[0] + ".lrc"
+            if os.path.exists(lrc_path):
+                with open(lrc_path, 'r', encoding='utf-8') as f:
+                    return f.read()
+            return "NOT_FOUND"
+        except Exception as e:
+            print(f"Error reading lyrics: {e}")
+            return "ERROR"
 
 
     # === Downloading ===
 
 
-    @Slot(str, str)
-    # Start downloading a track
-    def start_download(self, url, folder):
-        self.thread_pool.start(Worker(url, folder, self))
+    @Slot(list, str)
+    def start_queue_download(self, urls, folder):
+        import threading
+        import time
+        import random
 
+        def queue_process():
+            total = len(urls)
+            for index, url in enumerate(urls):
+                self.log_signal.emit(f"💿 Processing track {index + 1} of {total}")
+                
+                worker = Worker(url, folder, self)
+                worker.run()
+                
+                if index < total - 1:
+                    wait = random.randint(2, 5)
+                    self.log_signal.emit(f"⏳ Waiting {wait}s to avoid ban...")
+                    time.sleep(wait)
+            
+            self.log_signal.emit("✅ All done! Queue finished.")
+
+        threading.Thread(target=queue_process, daemon=True).start()
+    
 
     # === Playback control ===
 
@@ -421,6 +538,20 @@ class Backend(QObject):
         except Exception as e:
             print(f"Error saving EQ: {e}")
 
+    @Slot(int)
+    def set_volume(self, value):
+        """Sets the volume (0-100) via the player's equalizer."""
+        # Value comes from JS slider
+        if hasattr(self.player, "equalizer"):
+            self.player.equalizer.set_volume(value)
+
+    @Slot(result=bool)
+    def toggle_mute(self):
+        """Toggles mute state and returns the new state."""
+        if hasattr(self.player, "equalizer"):
+            return self.player.equalizer.toggle_mute()
+        return False
+
     @Slot(result='QVariantMap')
     # Get current shortcuts
     def get_shortcuts(self):
@@ -454,6 +585,23 @@ class Backend(QObject):
     def set_tray_mode(self, state):
         set_tray_mode(state)
         self.tray_mode_changed.emit(state)
+    
+    @Slot(result=bool)
+    def toggle_frameless_mode(self):
+        """Switches between normal and borderless window mode."""
+        if not self.view:
+            return False
+            
+        if self.view.isFullScreen():
+            self.view.showNormal()
+            return False
+        else:
+            self.view.showFullScreen()
+            return True
+    
+    @Slot(result=bool)
+    def is_fullscreen_mode(self):
+        return self.view.isFullScreen() if self.view else False
 
     # === Application control ===
 
@@ -483,6 +631,8 @@ class MainWebView(QWebEngineView):
 
 # Start the application
 def main():
+    update_libraries()
+    
     app = QApplication(sys.argv)
 
     app.setQuitOnLastWindowClosed(False)
