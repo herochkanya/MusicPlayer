@@ -101,6 +101,6 @@ Player/
 ## 📫 Contact & Contribution
 
 * GitHub Issues [MusicPlayer](https://github.com/herochkanya/MusicPlayer)
-* Telegram: [N*body](https://t.me/nobody_from_nothing)
+* Telegram: [N*body](https://t.me/This_username_is_already_taken_c)
 
 ![Banner](https://github.com/user-attachments/assets/3da8af2c-b376-454b-ae0a-dc0511637476)
