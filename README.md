@@ -16,7 +16,18 @@ Simple but powerful music player with built-in downloader from **YouTube** and *
 
 ## 📸 Screenshots
 
-![MusicPlayer_s8h2j2QYhZ](https://github.com/user-attachments/assets/a11778d2-34f3-4bcf-b97c-10a3ccbbdb43)
+<p align="center">
+  <img width="400" alt="MusicPlayer_YwKGKdZQbw" src="https://github.com/user-attachments/assets/90ba2b8c-b855-4fa0-b68f-be00f6369e7d" />
+  <img width="400" alt="python3 13_vJTzoBgmqW" src="https://github.com/user-attachments/assets/2e537074-beb1-468b-ac31-4903df33e8b1" />
+</p>
+<details>
+  <summary>Show record</summary>
+  
+
+https://github.com/user-attachments/assets/12b965f5-e491-4e62-aadb-c7c647af92e0
+
+
+</details>
 
 ## ⚡ Installation
 
