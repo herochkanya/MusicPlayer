@@ -70,16 +70,16 @@ from core.global_hotkeys import GlobalHotkeys
 # yt-dlp autoupdate
 def update_libraries():
     try:
-        print("🔄 Checking for yt-dlp updates...")
+        print("Checking for yt-dlp updates...")
         subprocess.run(
             [sys.executable, "-m", "pip", "install", "-U", "yt-dlp"],
             capture_output=True, 
             text=True,
             check=True
         )
-        print("✅ yt-dlp is up to date.")
+        print("yt-dlp is up to date.")
     except Exception as e:
-        print(f"⚠️ Could not update yt-dlp: {e}")
+        print(f"Could not update yt-dlp: {e}")
 
 # Resource helper
 def resource_path(relative_path):
